@@ -67,6 +67,7 @@ Different environment variables are available in the Deployment so that you can 
 - MAX_TOTAL_TOKENS: maximum number of tokens (so MAX_INPUT + tokens generated).
 - QUANTIZE: if you want your model to be quantized. Possible values `bitsandbytes`, `bitsandbytes-nf4` and `bitsandbytes-fp4`.
 - HUGGINGFACE_HUB_CACHE: where the models are cached. Default value for the Deployment is `/models-cache`, where the PVC you created for this purpose is mounted.
+- HUGGING_FACE_HUB_TOKEN: if you model requires an authorization to be downloaded (e.g. **Llama2**), use this parameter to enter you Hugging Face API token. The best is to load it from a secret.
 
 Please refer to the documentation for other parameters you can modify.
 
