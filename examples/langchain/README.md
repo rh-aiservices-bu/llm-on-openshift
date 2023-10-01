@@ -12,5 +12,6 @@ If you want to create your own custom image, with a different IDE like VSCode fo
 
 ## Content
 
-- `Langchain-HFTGI-Basic.ipynb`: Basic example on using Langchain to query an LLM served through Hugging Face TGI.
-- `Langchain-HFTGI-Prompt-memory.ipynb`: More advanced example with custom prompt and conversation memory buffer.
+- [Langchain-HFTGI-Basic.ipynb](Langchain-HFTGI-Basic.ipynb): Basic example on using Langchain to query Llama2 served through Hugging Face TGI.
+- [Langchain-HFTGI-Prompt-memory.ipynb](Langchain-HFTGI-Prompt-memory.ipynb): More advanced example on using Langchain to query Llama2 served through Hugging Face TGI, with custom prompt and conversation memory buffer.
+- [RAG_with_sources_Langchain-HFTGI.ipynb](RAG_with_sources_Langchain-HFTGI.ipynb): Retrieval Augmented Generation (ask questions about documents) using Langchain with Llama2 served through Hugging Face TGI.
