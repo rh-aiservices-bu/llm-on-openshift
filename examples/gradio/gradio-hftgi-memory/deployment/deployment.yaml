@@ -86,7 +86,7 @@ spec:
             successThreshold: 1
             failureThreshold: 24
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-memory:1.0.0'
+          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-memory:latest'
       dnsPolicy: ClusterFirst
   strategy:
     type: RollingUpdate

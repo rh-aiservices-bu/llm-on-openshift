@@ -61,8 +61,9 @@ def stream(input_text) -> Generator:
             next_token = q.get(True, timeout=1)
             if next_token is job_done:
                 break
-            content += next_token
-            yield next_token, content
+            if isinstance(next_token, str):
+                content += next_token
+                yield next_token, content
         except Empty:
             continue
 
