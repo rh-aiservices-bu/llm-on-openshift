@@ -1,0 +1,125 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: gradio-caikit-rag-redis
+  labels:
+    app: gradio-caikit-rag-redis
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: gradio-caikit-rag-redis
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gradio-caikit-rag-redis
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      affinity: {}
+      terminationGracePeriodSeconds: 120
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: server
+          livenessProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 8
+            periodSeconds: 100
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: APP_TITLE
+              value: 'Talk with your documentation'
+            - name: INFERENCE_SERVER_URL
+              value: 'your_server:port'
+            - name: MODEL_ID
+              value: 'llama2-chat'
+            - name: REDIS_URL
+              value: 'redis://default:*****@10.22.33.44:12345'
+            - name: REDIS_INDEX
+              values: 'docs'
+            - name: MAX_NEW_TOKENS
+              value: '512'
+            - name: TOP_K
+              value: '10'
+            - name: TOP_P
+              value: '0.95'
+            - name: TYPICAL_P
+              value: '0.95'
+            - name: TEMPERATURE
+              value: '0.01'
+            - name: REPETITION_PENALTY
+              value: '1.03'
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - name: http
+              containerPort: 7860
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          startupProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 24
+          terminationMessagePolicy: File
+          image: 'quay.io/rh-aiservices-bu/gradio-caikit-rag-redis:latest'
+          volumeMounts:
+            - name: redis-schema
+              mountPath: /opt/app-root/src/redis_schema.yaml
+              subPath: redis_schema.yaml
+            - name: caikit-certificate
+              mountPath: /opt/app-root/src/certificate.pem
+              subPath: certificate.pem
+      dnsPolicy: ClusterFirst
+      volumes:
+        - name: redis-schema
+          configMap:
+            name: redis-schema
+            items:
+              - key: redis_schema.yaml
+                path: redis_schema.yaml
+        - name: caikit-certificate
+          configMap:
+            name: caikit-certificate
+            items:
+              - key: certificate.pem
+                path: certificate.pem
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
