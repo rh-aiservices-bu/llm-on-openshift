@@ -1,0 +1,26 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu118/"
+verify_ssl = false
+name = "pytorch"
+
+[packages]
+# PyTorch packages
+torch = {version = "==2.0.1+cu118", index = "pytorch"}
+torchvision = {version = "==0.15.2+cu118", index = "pytorch"}
+gradio = "~=3.46.1"
+langchain = "==0.0.308"
+redis = "~=5.0.1"
+sentence-transformers = "~=2.2.2"
+grpcio = "~=1.51.3"
+grpcio-reflection = "~=1.51.3"
+python-dotenv = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

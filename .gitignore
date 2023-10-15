@@ -1,3 +1,5 @@
 .ipynb_checkpoints/
 *.pem
-.env
+*.env
+.vscode
+redis_schema.yaml

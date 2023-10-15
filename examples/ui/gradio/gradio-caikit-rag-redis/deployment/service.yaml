@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: gradio-caikit-rag-redis
+  labels:
+    app: gradio-caikit-rag-redis
+spec:
+  clusterIP: None
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: http
+      protocol: TCP
+      port: 7860
+      targetPort: http
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: gradio-caikit-rag-redis
