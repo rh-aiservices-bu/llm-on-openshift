@@ -20,6 +20,7 @@ A pre-built container image of the application is available at: `quay.io/rh-aise
 
 In the `deployment` folder, you will find the files necessary to deploy the application:
 
+- `cm_redis_schema.yaml`: A ConfigMap containing the schema for the database you have created in Redis (see the ingestion Notebook).
 - `deployment.yaml`: you must provide the URL of your inference server in the placeholder on L54 and Redis information on L56 and L58. Please feel free to modify other parameters as you see fit.
 - `service.yaml`
 - `route.yaml`
