@@ -21,3 +21,8 @@ In the `deployment` folder, you will find the files necessary to deploy the appl
 - `deployment.yaml`: you must provide the URL of your inference server in the placeholder on L53. Please feel free to modify other parameters as you see fit.
 - `service.yaml`
 - `route.yaml`
+
+## Development
+
+- The best is to create a virtual environment using the provided `Pipfile` or `requirements.txt`.
+- When you install the development section of the packages you can start coding with auto-reload on saves by launching `startdev.sh`. Gradio natively has auto-reload capabilities, but it's currently broken by other needed libraries... The Watchdog approach is universal!
