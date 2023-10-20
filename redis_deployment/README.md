@@ -2,7 +2,25 @@
 
 [Redis](https://redis.io/) is an open source, in-memory data store that can be used as a Vector Store for your embeddings in a Retrieval Augmented Generation scenario.
 
-## Using the Redis Enterprise Operator
+## Pre-requisites
+
+- Create the project/namespace where you want to deploy your Redis cluster.
+- Create the SCC needed for the Redis operator to work properly on OpenShift:
+
+```bash
+oc apply -f scc.yaml
+```
+
+- Provide the operator permissions for Redis Enterprise Operator and Cluster pods (replace `myproject` with the name of the project you created, and `rec` if you don't want to use the default name for the cluster when you will create it):
+
+```bash
+ oc adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:myproject:redis-enterprise-operator
+ oc adm policy add-scc-to-user redis-enterprise-scc system:serviceaccount:myproject:rec
+```
+
+Note: repeat the previous step for every cluster you want to create or operator you want to deploy in different namespaces.
+
+## Deployment using the Redis Enterprise Operator
 
 - From the OperatorHub, install the Redis Enterprise Operator.
 
