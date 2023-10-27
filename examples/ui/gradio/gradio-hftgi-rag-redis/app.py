@@ -15,6 +15,7 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.llms import HuggingFaceTextGenInference
 from langchain.prompts import PromptTemplate
 from langchain.vectorstores.redis import Redis
+from prometheus_client import start_http_server, Counter
 
 load_dotenv()
 
@@ -141,37 +142,38 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True
     )
 
+
+# Start Prometheus metrics server
+start_http_server(8000)
+        
 # Gradio implementation
 def ask_llm(message, history):
     for next_token, content in stream(message):
         yield(content)
 
-with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
-    chatbot = gr.Chatbot(
-        show_label=False,
-        avatar_images=(None,'assets/robot-head.svg'),
-        render=False
-        )
-    gr.ChatInterface(
-        ask_llm,
-        chatbot=chatbot,
-        clear_btn=None,
-        retry_btn=None,
-        undo_btn=None,
-        stop_btn=None,
-        description=APP_TITLE
-        )
+def unified_function(message=None, rating=None):
+    # Check if a rating is provided and process accordingly
+    if rating:
+        FEEDBACK_COUNTER.labels(stars=str(rating)).inc()
+        return {"chat_output": "", "feedback_output": f"Received {rating} star feedback. Thank you!"}
     
-    radio = gr.Radio(["1", "2", "3", "4", "5"], label="Star Rating")
-    output = gr.Textbox(label="Output Box")
+    # If a message is provided, get the chatbot's response
+    response = ask_llm(message)
+    return {"chat_output": response, "feedback_output": ""}
 
-    @radio.input(inputs=radio, outputs=output)
-    def get_feedback(star):
-        print("Rating: " + star)
-        # Increment the counter based on the star rating received
-        FEEDBACK_COUNTER.labels(stars=str(star)).inc()
-
-        return f"Received {star} star feedback. Thank you!"
+with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
+    message_input = gr.Textbox(placeholder="Ask HatBot...")
+    rating_input = gr.Radio(["1", "2", "3", "4", "5"], label="Star Rating")
+    chat_output = gr.Textbox(label="HatBot Response")
+    feedback_output = gr.Textbox(label="Feedback Response")
+    
+    gr.Interface(
+        fn=unified_function,
+        inputs=[message_input, rating_input],
+        outputs=[chat_output, feedback_output],
+        live=True,
+        description=APP_TITLE
+    ).launch()   
 
 if __name__ == "__main__":
     demo.queue().launch(
