@@ -7,6 +7,7 @@ from threading import Thread
 from typing import Optional
 
 import gradio as gr
+from prometheus_client import start_http_server, Counter
 from dotenv import load_dotenv
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import RetrievalQA
@@ -31,6 +32,9 @@ REPETITION_PENALTY = float(os.getenv('REPETITION_PENALTY', 1.03))
 
 REDIS_URL = os.getenv('REDIS_URL')
 REDIS_INDEX = os.getenv('REDIS_INDEX')
+
+# Create a counter metric
+FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -157,6 +161,17 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
         stop_btn=None,
         description=APP_TITLE
         )
+    
+    radio = gr.Radio(["1", "2", "3", "4", "5"], label="Star Rating")
+    output = gr.Textbox(label="Output Box")
+
+    @radio.input(inputs=radio, outputs=output)
+    def get_feedback(star):
+        print("Rating: " + star)
+        # Increment the counter based on the star rating received
+        FEEDBACK_COUNTER.labels(stars=str(star)).inc()
+
+        return f"Received {star} star feedback. Thank you!"
 
 if __name__ == "__main__":
     demo.queue().launch(
