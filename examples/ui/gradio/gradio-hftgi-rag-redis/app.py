@@ -36,6 +36,7 @@ REDIS_INDEX = os.getenv('REDIS_INDEX')
 
 # Create a counter metric
 FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
+llm_id = ""
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -58,6 +59,9 @@ def remove_source_duplicates(input_list):
     return unique_list
 
 def stream(input_text) -> Generator:
+
+    global llm_id
+
     # Create a Queue
     job_done = object()
 
@@ -65,6 +69,10 @@ def stream(input_text) -> Generator:
     def task():
         resp = qa_chain({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
+        llm_id = resp.get('model_id',"")
+        print(resp)
+        # if 'model_id' in resp:
+        #     q.put({'type': 'model_id', 'value': resp['model_id']})
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
             for source in sources:
@@ -83,8 +91,10 @@ def stream(input_text) -> Generator:
             next_token = q.get(True, timeout=1)
             if next_token is job_done:
                 break
-            if isinstance(next_token, str):
-                content += next_token
+            # if isinstance(next_token, dict) and 'model_id' in next_token:
+            #     model_id = next_token['model_id']
+            elif isinstance(next_token, str):
+                content += next_token     
                 yield next_token, content
         except Empty:
             continue
@@ -148,18 +158,22 @@ start_http_server(8000)
         
 # Gradio implementation
 def ask_llm(message, history):
-    for next_token, content in stream(message):
-        yield(content)
+    for next_token, content in stream(message):   
+      yield f"{content}\nModel ID: {llm_id}"
 
-with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
-    chatbot = gr.Chatbot(
-        show_label=False,
-        avatar_images=(None,'assets/robot-head.svg'),
-        render=False
-        )
-    gr.ChatInterface(
-        ask_llm,
-        chatbot=chatbot,
+with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:    
+    # chatbot = gr.Chatbot(
+    #     show_label=False,
+    #     avatar_images=(None,'assets/robot-head.svg'),
+    #     render=False
+    #     )
+    input_box = gr.Textbox(label="Your Question")
+    output_answer = gr.Textbox(label="Answer", readonly=True)
+
+    gr.Interface(
+        fn=ask_llm,
+        inputs=[input_box],
+        outputs=[output_answer],
         clear_btn=None,
         retry_btn=None,
         undo_btn=None,
@@ -177,7 +191,7 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
         FEEDBACK_COUNTER.labels(stars=str(star)).inc()
 
         return f"Received {star} star feedback. Thank you!"
-      
+
 
 if __name__ == "__main__":
     demo.queue().launch(
