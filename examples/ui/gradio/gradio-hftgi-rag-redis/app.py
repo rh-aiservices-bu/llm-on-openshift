@@ -5,7 +5,7 @@ from collections.abc import Generator
 from queue import Empty, Queue
 from threading import Thread
 from typing import Optional
-
+from text_generation import Client
 import gradio as gr
 from prometheus_client import start_http_server, Counter
 from dotenv import load_dotenv
@@ -36,7 +36,9 @@ REDIS_INDEX = os.getenv('REDIS_INDEX')
 
 # Create a counter metric
 FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
-llm_id = ""
+model_id = ""
+
+client = Client(base_url=INFERENCE_SERVER_URL)
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -60,7 +62,7 @@ def remove_source_duplicates(input_list):
 
 def stream(input_text) -> Generator:
 
-    global llm_id
+    global model_id
 
     # Create a Queue
     job_done = object()
@@ -69,10 +71,14 @@ def stream(input_text) -> Generator:
     def task():
         resp = qa_chain({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
-        llm_id = resp.get('model_id',"")
-        print(resp)
-        # if 'model_id' in resp:
-        #     q.put({'type': 'model_id', 'value': resp['model_id']})
+        
+        input = str(input_text)
+        response = client.generate(input, max_new_tokens=20)
+        text = response.generated_text
+        model_id = response.model_id
+        q.put({"model_id": response.model_id})
+        print("MODEL ID IS:",model_id)
+
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
             for source in sources:
@@ -90,12 +96,12 @@ def stream(input_text) -> Generator:
         try:
             next_token = q.get(True, timeout=1)
             if next_token is job_done:
-                break
-            # if isinstance(next_token, dict) and 'model_id' in next_token:
-            #     model_id = next_token['model_id']
+                break   
+            if isinstance(next_token, dict) and 'model_id' in next_token:
+                model_id = next_token['model_id']
             elif isinstance(next_token, str):
                 content += next_token     
-                yield next_token, content
+                yield next_token, content, model_id
         except Empty:
             continue
 
@@ -158,15 +164,12 @@ start_http_server(8000)
         
 # Gradio implementation
 def ask_llm(message, history):
-    for next_token, content in stream(message):   
-      yield f"{content}\nModel ID: {llm_id}"
+    for next_token, content, model_id in stream(message):  
+        print(model_id) 
+        yield f"{content}\nModel ID: {model_id}"
 
 with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:    
-    # chatbot = gr.Chatbot(
-    #     show_label=False,
-    #     avatar_images=(None,'assets/robot-head.svg'),
-    #     render=False
-    #     )
+
     input_box = gr.Textbox(label="Your Question")
     output_answer = gr.Textbox(label="Answer", readonly=True)
 
