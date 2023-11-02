@@ -166,12 +166,14 @@ start_http_server(8000)
 def ask_llm(message, history):
     for next_token, content, model_id in stream(message):  
         print(model_id) 
-        yield f"{content}\nModel ID: {model_id}"
+        yield f"{content}\n\nModel ID: {model_id}"
+
 
 with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:    
 
     input_box = gr.Textbox(label="Your Question")
     output_answer = gr.Textbox(label="Answer", readonly=True)
+
 
     gr.Interface(
         fn=ask_llm,
@@ -182,7 +184,7 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
         undo_btn=None,
         stop_btn=None,
         description=APP_TITLE
-        )
+        )    
     
     radio = gr.Radio(["1", "2", "3", "4", "5"], label="Star Rating")
     output = gr.Textbox(label="Output Box")
