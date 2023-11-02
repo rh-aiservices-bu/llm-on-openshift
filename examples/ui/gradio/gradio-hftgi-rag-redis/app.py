@@ -73,7 +73,7 @@ def stream(input_text) -> Generator:
         sources = remove_source_duplicates(resp['source_documents'])
         
         input = str(input_text)
-        response = client.generate(input, max_new_tokens=20)
+        response = client.generate(input, max_new_tokens=2048)
         text = response.generated_text
         model_id = response.model_id
         q.put({"model_id": response.model_id})
