@@ -5,7 +5,7 @@ from collections.abc import Generator
 from queue import Empty, Queue
 from threading import Thread
 from typing import Optional
-
+from text_generation import Client
 import gradio as gr
 from prometheus_client import start_http_server, Counter
 from dotenv import load_dotenv
@@ -36,6 +36,9 @@ REDIS_INDEX = os.getenv('REDIS_INDEX')
 
 # Create a counter metric
 FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
+model_id = ""
+
+client = Client(base_url=INFERENCE_SERVER_URL)
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -58,6 +61,9 @@ def remove_source_duplicates(input_list):
     return unique_list
 
 def stream(input_text) -> Generator:
+
+    global model_id
+
     # Create a Queue
     job_done = object()
 
@@ -65,6 +71,14 @@ def stream(input_text) -> Generator:
     def task():
         resp = qa_chain({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
+        
+        input = str(input_text)
+        response = client.generate(input, max_new_tokens=2048)
+        text = response.generated_text
+        model_id = response.model_id
+        q.put({"model_id": response.model_id})
+        print("MODEL ID IS:",model_id)
+
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
             for source in sources:
@@ -82,10 +96,12 @@ def stream(input_text) -> Generator:
         try:
             next_token = q.get(True, timeout=1)
             if next_token is job_done:
-                break
-            if isinstance(next_token, str):
-                content += next_token
-                yield next_token, content
+                break   
+            if isinstance(next_token, dict) and 'model_id' in next_token:
+                model_id = next_token['model_id']
+            elif isinstance(next_token, str):
+                content += next_token     
+                yield next_token, content, model_id
         except Empty:
             continue
 
@@ -148,24 +164,27 @@ start_http_server(8000)
         
 # Gradio implementation
 def ask_llm(message, history):
-    for next_token, content in stream(message):
-        yield(content)
+    for next_token, content, model_id in stream(message):  
+        print(model_id) 
+        yield f"{content}\n\nModel ID: {model_id}"
 
-with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
-    chatbot = gr.Chatbot(
-        show_label=False,
-        avatar_images=(None,'assets/robot-head.svg'),
-        render=False
-        )
-    gr.ChatInterface(
-        ask_llm,
-        chatbot=chatbot,
+
+with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:    
+
+    input_box = gr.Textbox(label="Your Question")
+    output_answer = gr.Textbox(label="Answer", readonly=True)
+
+
+    gr.Interface(
+        fn=ask_llm,
+        inputs=[input_box],
+        outputs=[output_answer],
         clear_btn=None,
         retry_btn=None,
         undo_btn=None,
         stop_btn=None,
         description=APP_TITLE
-        )
+        )    
     
     radio = gr.Radio(["1", "2", "3", "4", "5"], label="Star Rating")
     output = gr.Textbox(label="Output Box")
@@ -177,7 +196,7 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
         FEEDBACK_COUNTER.labels(stars=str(star)).inc()
 
         return f"Received {star} star feedback. Thank you!"
-      
+
 
 if __name__ == "__main__":
     demo.queue().launch(
