@@ -34,8 +34,12 @@ REPETITION_PENALTY = float(os.getenv('REPETITION_PENALTY', 1.03))
 REDIS_URL = os.getenv('REDIS_URL')
 REDIS_INDEX = os.getenv('REDIS_INDEX')
 
+# Start Prometheus metrics server
+start_http_server(8000)
+
 # Create a counter metric
 FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
+MODEL_USAGE_COUNTER = Counter('model_usage', 'Number of times a model was used', ['model_id'])
 model_id = ""
 
 client = Client(base_url=INFERENCE_SERVER_URL)
@@ -73,12 +77,12 @@ def stream(input_text) -> Generator:
         sources = remove_source_duplicates(resp['source_documents'])
         
         input = str(input_text)
-        response = client.generate(input, max_new_tokens=2048)
+        response = client.generate(input, max_new_tokens=MAX_NEW_TOKENS)
         text = response.generated_text
         model_id = response.model_id
         q.put({"model_id": response.model_id})
         print("MODEL ID IS:",model_id)
-
+        print("Question:",input)
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
             for source in sources:
@@ -99,6 +103,7 @@ def stream(input_text) -> Generator:
                 break   
             if isinstance(next_token, dict) and 'model_id' in next_token:
                 model_id = next_token['model_id']
+                MODEL_USAGE_COUNTER.labels(model_id=model_id).inc()
             elif isinstance(next_token, str):
                 content += next_token     
                 yield next_token, content, model_id
@@ -157,10 +162,6 @@ qa_chain = RetrievalQA.from_chain_type(
     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
     return_source_documents=True
     )
-
-
-# Start Prometheus metrics server
-start_http_server(8000)
         
 # Gradio implementation
 def ask_llm(message, history):
