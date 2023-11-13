@@ -15,7 +15,7 @@ from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain.llms import HuggingFaceTextGenInference
 from langchain.prompts import PromptTemplate
 from langchain.vectorstores.redis import Redis
-from prometheus_client import start_http_server, Counter
+from prometheus_client import start_http_server, Counter, Histogram, Gauge
 
 load_dotenv()
 
@@ -24,7 +24,7 @@ load_dotenv()
 APP_TITLE = os.getenv('APP_TITLE', 'Talk with your documentation')
 
 INFERENCE_SERVER_URL = os.getenv('INFERENCE_SERVER_URL')
-MAX_NEW_TOKENS = int(os.getenv('MAX_NEW_TOKENS', 512))
+MAX_NEW_TOKENS = int(os.getenv('MAX_NEW_TOKENS', 100))
 TOP_K = int(os.getenv('TOP_K', 10))
 TOP_P = float(os.getenv('TOP_P', 0.95))
 TYPICAL_P = float(os.getenv('TYPICAL_P', 0.95))
@@ -33,16 +33,20 @@ REPETITION_PENALTY = float(os.getenv('REPETITION_PENALTY', 1.03))
 
 REDIS_URL = os.getenv('REDIS_URL')
 REDIS_INDEX = os.getenv('REDIS_INDEX')
-
+TIMEOUT = int(os.getenv('TIMEOUT', 30))
 # Start Prometheus metrics server
 start_http_server(8000)
 
-# Create a counter metric
-FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars"])
+# Create metric
+FEEDBACK_COUNTER = Counter("feedback_stars", "Number of feedbacks by stars", ["stars", "model_id"])
 MODEL_USAGE_COUNTER = Counter('model_usage', 'Number of times a model was used', ['model_id'])
+REQUEST_TIME = Gauge('request_duration_seconds', 'Time spent processing a request', ['model_id'])
+SATISFACTION = Gauge('satisfaction_rating', 'User satisfaction rating', ['rating'])
+TIMEOUTS = Counter('timeouts_total', 'Total number of request timeouts', ['model_id'])
+
 model_id = ""
 
-client = Client(base_url=INFERENCE_SERVER_URL)
+client = Client(base_url=INFERENCE_SERVER_URL,timeout=TIMEOUT)
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -67,20 +71,28 @@ def remove_source_duplicates(input_list):
 def stream(input_text) -> Generator:
 
     global model_id
-
     # Create a Queue
     job_done = object()
 
     # Create a function to call - this will run in a thread
     def task():
         resp = qa_chain({"query": input_text})
-        sources = remove_source_duplicates(resp['source_documents'])
-        
+        sources = remove_source_duplicates(resp['source_documents'])  
         input = str(input_text)
-        response = client.generate(input, max_new_tokens=MAX_NEW_TOKENS)
-        text = response.generated_text
-        model_id = response.model_id
+        start_time = time.perf_counter() # start and end time to get the precise timing of the request
+        
+        try:
+            response = client.generate(input, max_new_tokens=MAX_NEW_TOKENS)
+            end_time = time.perf_counter()
+            model_id = response.model_id
+            # Record successful request time
+            REQUEST_TIME.labels(model_id=model_id).set(end_time - start_time)
+        except TimeoutError:  # or whatever exception your client throws on timeout
+            end_time = time.perf_counter()
+            TIMEOUTS.info({'model_id': model_id, 'timeout_duration': str(end_time - start_time), 'input_text': input})
+
         q.put({"model_id": response.model_id})
+        q.put({"generated_text": response.generated_text})
         print("MODEL ID IS:",model_id)
         print("Question:",input)
         if len(sources) != 0:
@@ -88,6 +100,7 @@ def stream(input_text) -> Generator:
             for source in sources:
                 q.put("* " + str(source) + "\n")
         q.put(job_done)
+        print("Saving it...")
 
     # Create a thread and start the function
     t = Thread(target=task)
@@ -104,9 +117,11 @@ def stream(input_text) -> Generator:
             if isinstance(next_token, dict) and 'model_id' in next_token:
                 model_id = next_token['model_id']
                 MODEL_USAGE_COUNTER.labels(model_id=model_id).inc()
+            if isinstance(next_token, dict) and 'generated_text' in next_token:
+                generated_text = next_token['generated_text']    
             elif isinstance(next_token, str):
                 content += next_token     
-                yield next_token, content, model_id
+                yield next_token, generated_text, model_id
         except Empty:
             continue
 
@@ -163,18 +178,19 @@ qa_chain = RetrievalQA.from_chain_type(
     return_source_documents=True
     )
         
-# Gradio implementation
 def ask_llm(message, history):
-    for next_token, content, model_id in stream(message):  
+    for next_token, generated_text, model_id in stream(message):  
         print(model_id) 
-        yield f"{content}\n\nModel ID: {model_id}"
+        model_id_box.update(value=model_id)
+        yield f"{generated_text}\n\nModel ID: {model_id}"
 
 
+# Gradio implementation
 with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:    
 
     input_box = gr.Textbox(label="Your Question")
     output_answer = gr.Textbox(label="Answer", readonly=True)
-
+    model_id_box = gr.Textbox(visible=False)  # will hold the model_id
 
     gr.Interface(
         fn=ask_llm,
@@ -194,7 +210,8 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
     def get_feedback(star):
         print("Rating: " + star)
         # Increment the counter based on the star rating received
-        FEEDBACK_COUNTER.labels(stars=str(star)).inc()
+        FEEDBACK_COUNTER.labels(stars=str(star), model_id=model_id).inc()
+        SATISFACTION.labels(rating=star).set(1)
 
         return f"Received {star} star feedback. Thank you!"
 
