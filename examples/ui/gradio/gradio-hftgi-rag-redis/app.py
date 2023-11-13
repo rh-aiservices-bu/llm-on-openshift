@@ -16,6 +16,7 @@ from langchain.llms import HuggingFaceTextGenInference
 from langchain.prompts import PromptTemplate
 from langchain.vectorstores.redis import Redis
 from prometheus_client import start_http_server, Counter, Histogram, Gauge
+import requests
 
 load_dotenv()
 
@@ -68,6 +69,15 @@ def remove_source_duplicates(input_list):
             unique_list.append(item.metadata['source'])
     return unique_list
 
+def get_model_info():
+    response = requests.get(INFERENCE_SERVER_URL + "/info")
+    json_response = response.json()
+    print(json_response)
+    model_id = json_response['model_id']  # Extract the model_id
+    print("Model ID:", model_id)  # Print the model_id
+    return model_id  # Return the model_id instead of the whole JSON
+
+
 def stream(input_text) -> Generator:
 
     global model_id
@@ -82,17 +92,17 @@ def stream(input_text) -> Generator:
         start_time = time.perf_counter() # start and end time to get the precise timing of the request
         
         try:
-            response = client.generate(input, max_new_tokens=MAX_NEW_TOKENS)
+            # response = client.generate(input, max_new_tokens=MAX_NEW_TOKENS)
+            model_id = get_model_info()
             end_time = time.perf_counter()
-            model_id = response.model_id
             # Record successful request time
             REQUEST_TIME.labels(model_id=model_id).set(end_time - start_time)
         except TimeoutError:  # or whatever exception your client throws on timeout
             end_time = time.perf_counter()
             TIMEOUTS.info({'model_id': model_id, 'timeout_duration': str(end_time - start_time), 'input_text': input})
 
-        q.put({"model_id": response.model_id})
-        q.put({"generated_text": response.generated_text})
+        q.put({"model_id": model_id})
+        # q.put({"generated_text": resp.generated_text})
         print("MODEL ID IS:",model_id)
         print("Question:",input)
         if len(sources) != 0:
@@ -117,11 +127,11 @@ def stream(input_text) -> Generator:
             if isinstance(next_token, dict) and 'model_id' in next_token:
                 model_id = next_token['model_id']
                 MODEL_USAGE_COUNTER.labels(model_id=model_id).inc()
-            if isinstance(next_token, dict) and 'generated_text' in next_token:
-                generated_text = next_token['generated_text']    
+            # if isinstance(next_token, dict) and 'generated_text' in next_token:
+            #     generated_text = next_token['generated_text']    
             elif isinstance(next_token, str):
                 content += next_token     
-                yield next_token, generated_text, model_id
+                yield next_token, content, model_id
         except Empty:
             continue
 
@@ -179,10 +189,10 @@ qa_chain = RetrievalQA.from_chain_type(
     )
         
 def ask_llm(message, history):
-    for next_token, generated_text, model_id in stream(message):  
+    for next_token, content, model_id in stream(message):  
         print(model_id) 
         model_id_box.update(value=model_id)
-        yield f"{generated_text}\n\nModel ID: {model_id}"
+        yield f"{content}\n\nModel ID: {model_id}"
 
 
 # Gradio implementation
