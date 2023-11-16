@@ -1,0 +1,103 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: gradio-hftgi-rag-pgvector
+  labels:
+    app: gradio-hftgi-rag-pgvector
+spec:
+  replicas: 0
+  selector:
+    matchLabels:
+      app: gradio-hftgi-rag-pgvector
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: gradio-hftgi-rag-pgvector
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      affinity: {}
+      terminationGracePeriodSeconds: 120
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 2Gi
+            requests:
+              cpu: '1'
+              memory: 1Gi
+          readinessProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          terminationMessagePath: /dev/termination-log
+          name: server
+          livenessProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 8
+            periodSeconds: 100
+            successThreshold: 1
+            failureThreshold: 3
+          env:
+            - name: APP_TITLE
+              value: 'Talk with your documentation'
+            - name: INFERENCE_SERVER_URL
+              value: 'https://your_inference_endpoint'
+            - name: DB_CONNECTION_STRING
+              value: 'postgresql+psycopg://user:password@postgresql-server:5432/vectordb'
+            - name: DB_COLLECTION_NAME
+              values: 'documents_test'
+            - name: MAX_NEW_TOKENS
+              value: '512'
+            - name: TOP_K
+              value: '10'
+            - name: TOP_P
+              value: '0.95'
+            - name: TYPICAL_P
+              value: '0.95'
+            - name: TEMPERATURE
+              value: '0.01'
+            - name: REPETITION_PENALTY
+              value: '1.03'
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - name: http
+              containerPort: 7860
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          startupProbe:
+            httpGet:
+              path: /queue/status
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 24
+          terminationMessagePolicy: File
+          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-rag-pgvector:latest'
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 1
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

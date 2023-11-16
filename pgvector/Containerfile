@@ -1,0 +1,32 @@
+FROM quay.io/sclorg/postgresql-15-c9s as BUILDER
+
+USER 0
+
+# Clone the repository and checkout to a specific tag
+RUN dnf install -y git gcc gcc-c++ make redhat-rpm-config postgresql-server-devel && \
+    git clone https://github.com/pgvector/pgvector.git && \
+    cd pgvector && \
+    git checkout tags/v0.5.1 && \
+    make
+
+FROM quay.io/sclorg/postgresql-15-c9s
+
+USER 0
+
+RUN /usr/bin/mkdir -p '/usr/lib64/pgsql' && \
+    /usr/bin/mkdir -p '/usr/share/pgsql/extension' && \
+    /usr/bin/mkdir -p '/usr/share/pgsql/extension' && \
+    /usr/bin/mkdir -p '/usr/include/pgsql/server/extension/vector/'
+
+COPY --from=BUILDER /opt/app-root/src/pgvector/vector.so /usr/lib64/pgsql/vector.so
+COPY --from=BUILDER /opt/app-root/src/pgvector/vector.control /usr/share/pgsql/extension/vector.control
+COPY --from=BUILDER /opt/app-root/src/pgvector/sql/*.sql /usr/share/pgsql/extension/
+COPY --from=BUILDER /opt/app-root/src/pgvector/sql/vector--0.5.1.sql /usr/share/pgsql/extension/vector--0.5.1.sql
+COPY --from=BUILDER /opt/app-root/src/pgvector/src/vector.h /usr/include/pgsql/server/extension/vector/vector.h
+
+RUN chmod 755 /usr/lib64/pgsql/vector.so && \
+    chmod 644 /usr/share/pgsql/extension/vector.control && \
+    chmod 644 /usr/share/pgsql/extension/*.sql && \
+    chmod 644 /usr/include/pgsql/server/extension/vector/vector.h
+
+USER 26
