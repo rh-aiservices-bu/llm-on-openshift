@@ -15,7 +15,7 @@ Two different Inference Servers deployment instructions are available:
 
 Deployments of different databases that can be used as a Vector Store are available:
 
-- [PostgreSQL+pgvector](https://github.com/pgvector/pgvector): Full recipe to create an instance of PostgreSQL with the pgvector extension, making it usable as a vector store.
+- [PostgreSQL+pgvector](pgvector_deployment/README.md): Full recipe to create an instance of PostgreSQL with the pgvector extension, making it usable as a vector store.
 - [Redis](redis_deployment/README.md): Full recipe to deploy Redis, create a Cluster and a suitable Database for a Vector Store.
 
 ### Inference and application examples
