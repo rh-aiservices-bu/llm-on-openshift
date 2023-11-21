@@ -1,6 +1,6 @@
 # LLM on OpenShift
 
-In this repo you will find resources, demos, recipes,... to work with LLMs on OpenShift with OpenShift Data Science or Open Data Hub.
+In this repo you will find resources, demos, recipes... to work with LLMs on OpenShift with OpenShift Data Science or Open Data Hub.
 
 ## Content
 
