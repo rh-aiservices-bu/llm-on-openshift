@@ -32,7 +32,7 @@ for user in range(10):
     question_input.send_keys(f"User {user + 1}: What is OpenShift AI?")
     driver.find_element(By.ID, "component-6").click()
 
-    label_list=[1,2,3,4,5]
+    label_list=[1,1,1,1,1,1,1,1,2,3,4,5]
     random_num = random.choice(label_list)
     labelname=str(random_num)+'-radio-label'
     label_id="label[data-testid='"+labelname+"']"
