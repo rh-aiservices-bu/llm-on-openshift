@@ -71,8 +71,6 @@ def get_pdf_file():
 
 def create_pdf(text):
     output_filename = get_pdf_file()
-    print("output_filename = " + output_filename)
-    print(text)
     html_text = markdown(text, output_format='html4')
     pdfkit.from_string(html_text, output_filename)
 
@@ -161,19 +159,22 @@ llm = HuggingFaceTextGenInference(
     callbacks=[QueueCallback(q)]
 )
 
-prompt_template = """
-<s>[INST] <<SYS>>
-{question}
-Our goal is to generate $100,000 in sales within the first six months.
-The proposal should include pricing strategy, marketing plan, and details on the unique features of our products. 
-The proposal should include an overview of the product, its features and benefits, pricing, implementation timeline, support options, and testimonials from satisfied customers. 
-Additionally, please include a marketing plan for promoting the product to the target audience.
-Proposal should be minimum of 1000 lines and should be complete.
+
+prompt_template="""<s>[INST] <<SYS>>
+You are a helpful, respectful and honest assistant named HatBot helping users to generate project proposal for various products owned by Red Hat.
+You will be given a product and the customer information, and a context to provide you with information. You must generate the proposal based as much as possible on this context.
+Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+
+If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
+Do not provide any information thats not correct and out of context provided.
+
+The proposal should contain headings and sub-headings and each heading and sub-heading should be in bold.
+
+Proposal should be minimum of 200 lines.
 <</SYS>>
 
-Context: {context}
-
-[/INST]
+Question: {question}
+Context: {context} [/INST]
 """
 
 QA_CHAIN_PROMPT = PromptTemplate(
@@ -199,7 +200,11 @@ qa_chain = RetrievalQA.from_chain_type(
 
 # Gradio implementation
 def ask_llm(customer, product):
-    query = f"Please generate a sales proposal for the {product} product to sell to {customer} as a customer."
+    query = f"""Please generate a sales proposal for the {product} product to sell to {customer} as a customer.
+             Proposal should be addressed to {customer} and should be from the company owning the {product} product.
+             The proposal should include pricing strategy, marketing plan, and details on the unique features of {product}. 
+             The proposal should include an overview of the {product} product, its features and benefits, and support options.
+            """
     for next_token, content in stream(query):
         yield(content)
 
