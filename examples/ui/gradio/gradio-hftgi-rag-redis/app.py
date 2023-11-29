@@ -35,7 +35,7 @@ TOP_P = float(os.getenv('TOP_P', 0.95))
 TYPICAL_P = float(os.getenv('TYPICAL_P', 0.95))
 TEMPERATURE = float(os.getenv('TEMPERATURE', 0.01))
 REPETITION_PENALTY = float(os.getenv('REPETITION_PENALTY', 1.03))
-PDF_FILE_DIR = os.getenv('PDF_FILE_DIR', tempfile.gettempdir())
+PDF_FILE_DIR = "proposal-docs"
 
 REDIS_URL = os.getenv('REDIS_URL')
 REDIS_INDEX = os.getenv('REDIS_INDEX')
@@ -66,8 +66,12 @@ def get_model_id():
 
 model_id = get_model_id()
 # PDF Generation
+def get_pdf_file():
+    return os.path.join("./assets", PDF_FILE_DIR, 'proposal.pdf')
+
 def create_pdf(text):
-    output_filename = os.path.join(PDF_FILE_DIR, 'Test.pdf')
+    output_filename = get_pdf_file()
+    print("output_filename = " + output_filename)
     html_text = markdown(text, output_format='html4')
     pdfkit.from_string(html_text, output_filename)
 
@@ -207,9 +211,9 @@ css = "#output-container {font-size:0.8rem !important}"
 with gr.Blocks(title="HatBot") as demo:
     with gr.Row():
         with gr.Column(scale=1):
-            customer_box = gr.Textbox(label="Customer", info="Enter the customer name")
+            customer_box = gr.Textbox(label="Customer", info="Enter the customer name", required=True)
             product_dropdown = gr.Dropdown(
-             ["Red Hat OpenShift", "Red Hat OpenShift Data Science", "Red Hat AMQ Streams"], label="Product", info="Select the product to generate proposal"
+             ["Red Hat OpenShift", "Red Hat OpenShift Data Science", "Red Hat AMQ Streams"], required=True, label="Product", info="Select the product to generate proposal"
             )
             with gr.Row():
                 submit_button = gr.Button("Generate")
@@ -219,9 +223,10 @@ with gr.Blocks(title="HatBot") as demo:
             radio = gr.Radio(["1", "2", "3", "4", "5"], label="Rate the model")
 
         with gr.Column(scale=2):
-            output_answer = gr.Textbox(label="Project Proposal", readonly=True, lines=10, elem_id="output-container", scale=4, max_lines=10)
-            source = gr.Textbox(label="Sources", elem_id="source-container", readonly=True, lines=5, scale=4, max_lines=5)
-            download_button = gr.Button("Download as PDF")
+            output_answer = gr.Textbox(label="Project Proposal", readonly=True, lines=14, elem_id="output-container", scale=4, max_lines=14)
+            #source = gr.Textbox(label="Sources", elem_id="source-container", readonly=True, lines=5, scale=4, max_lines=5)
+
+            download_button = gr.Button("Download as PDF", link="/file=" + get_pdf_file())
         
     download_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
     submit_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
