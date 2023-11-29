@@ -72,6 +72,7 @@ def get_pdf_file():
 def create_pdf(text):
     output_filename = get_pdf_file()
     print("output_filename = " + output_filename)
+    print(text)
     html_text = markdown(text, output_format='html4')
     pdfkit.from_string(html_text, output_filename)
 
@@ -179,13 +180,10 @@ QA_CHAIN_PROMPT = PromptTemplate(
     template=prompt_template,
     input_variables=["context", "question"])
 
-print(QA_CHAIN_PROMPT)
-
-
 # qa_chain = RetrievalQA.from_chain_type(
 #     llm,
 #     retriever=rds.as_retriever(
-#         search_type="stuff",
+#         search_type="similarity",
 #         search_kwargs={"k": 4, "distance_threshold": 0.5}),
 #     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
 #     return_source_documents=True
@@ -201,8 +199,7 @@ qa_chain = RetrievalQA.from_chain_type(
 
 # Gradio implementation
 def ask_llm(customer, product):
-    query = f"Please generate a Sales Proposal for our {product} product to sell to {customer}."
-    resp = qa_chain({"query": query })
+    query = f"Please generate a sales proposal for the {product} product to sell to {customer} as a customer."
     for next_token, content in stream(query):
         yield(content)
 
@@ -221,21 +218,22 @@ with gr.Blocks(title="HatBot") as demo:
 
             gr.HTML(f"<div><span id='model_id'>Model: {model_id}</span></div>")
             radio = gr.Radio(["1", "2", "3", "4", "5"], label="Rate the model")
+            output_rating = gr.Textbox(elem_id="source-container", readonly=True, label="Rating")
+
 
         with gr.Column(scale=2):
-            output_answer = gr.Textbox(label="Project Proposal", readonly=True, lines=14, elem_id="output-container", scale=4, max_lines=14)
+            output_answer = gr.Textbox(label="Project Proposal", readonly=True, lines=19, elem_id="output-container", scale=4, max_lines=19)
             #source = gr.Textbox(label="Sources", elem_id="source-container", readonly=True, lines=5, scale=4, max_lines=5)
-
             download_button = gr.Button("Download as PDF", link="/file=" + get_pdf_file())
         
-    download_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
+    download_button.click(ask_llm, inputs=[])
     submit_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
     clear_button.click(lambda: [None, None ,None , None], 
                        inputs=[], 
-                       outputs=[customer_box,product_dropdown,output_answer,radio])
+                       outputs=[customer_box,product_dropdown,output_answer,radio,output_rating])
 
     
-    @radio.input(inputs=radio, outputs=output_answer)
+    @radio.input(inputs=radio, outputs=output_rating)
     def get_feedback(star):
         print("Rating: " + star)
         # Increment the counter based on the star rating received

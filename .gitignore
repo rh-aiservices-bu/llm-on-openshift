@@ -4,3 +4,4 @@
 .vscode
 redis_schema.yaml
 .DS_Store
+**/*.pdf
