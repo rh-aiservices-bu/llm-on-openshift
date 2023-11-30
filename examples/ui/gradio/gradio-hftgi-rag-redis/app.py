@@ -190,13 +190,13 @@ QA_CHAIN_PROMPT = PromptTemplate(
 #     return_source_documents=True
 #     )
 
-# qa_chain = RetrievalQA.from_chain_type(
-#     llm,
-#     chain_type='mmr',
-#     retriever=rds.as_retriever(),
-#     return_source_documents=True,
-#     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
-# )
+qa_chain = RetrievalQA.from_chain_type(
+    llm,
+    chain_type='stuff',
+    retriever=rds.as_retriever(),
+    return_source_documents=True,
+    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+)
 
 # Gradio implementation
 def ask_llm(customer, product):
@@ -213,9 +213,9 @@ css = "#output-container {font-size:0.8rem !important}"
 with gr.Blocks(title="HatBot") as demo:
     with gr.Row():
         with gr.Column(scale=1):
-            customer_box = gr.Textbox(label="Customer", info="Enter the customer name", required=True)
+            customer_box = gr.Textbox(label="Customer", info="Enter the customer name")
             product_dropdown = gr.Dropdown(
-             ["Red Hat OpenShift", "Red Hat OpenShift Data Science", "Red Hat AMQ Streams"], required=True, label="Product", info="Select the product to generate proposal"
+             ["Red Hat OpenShift", "Red Hat OpenShift Data Science", "Red Hat AMQ Streams"], label="Product", info="Select the product to generate proposal"
             )
             with gr.Row():
                 submit_button = gr.Button("Generate")
@@ -231,7 +231,7 @@ with gr.Blocks(title="HatBot") as demo:
             #source = gr.Textbox(label="Sources", elem_id="source-container", readonly=True, lines=5, scale=4, max_lines=5)
             download_button = gr.Button("Download as PDF", link="/file=" + get_pdf_file())
         
-    download_button.click(ask_llm, inputs=[])
+    download_button.click(lambda: [], inputs=[])
     submit_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
     clear_button.click(lambda: [None, None ,None , None], 
                        inputs=[], 

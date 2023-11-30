@@ -1,0 +1,28 @@
+services:
+  gradio:
+    image: twinkllsisodia/gradio-hftgi-rag-redis10:latest
+    restart: always
+    platform: linux/amd64
+    environment:
+      - APP_TITLE="Talk with your documentation"                                                     
+      - INFERENCE_SERVER_URL=http://mistral-mistral.apps.ai-dev01.kni.syseng.devcluster.openshift.com
+      - REDIS_INDEX=docs
+      - REDIS_URL=redis://default:ZGCciPAe@host.docker.internal:11993
+      - MAX_NEW_TOKENS=1024
+      - TOP_K=10
+      - TOP_P=0.95
+      - TYPICAL_P=0.95
+      - TEMPERATURE=0.95
+      - REPETITION_PENALTY=1.175
+    expose:
+      - 7860
+      - 8000
+    ports:
+      - 7860:7860
+      - 8000:8000
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      -  ${PWD}/redis_schema.yaml:/opt/app-root/src/redis_schema.yaml
+      -  ${PWD}/app.py:/opt/app-root/src/app.py
+

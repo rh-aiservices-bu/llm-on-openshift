@@ -8,15 +8,14 @@ COPY rpms/ ./rpms/
 
 RUN cd rpms && rpm -i --nodeps *.rpm
 
-RUN yum install -y wget && \
-    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox-0.12.6-1.centos8.x86_64.rpm && \
-    yum install -y ./wkhtmltox-0.12.6-1.centos8.x86_64.rpm  && \
-    rm ./wkhtmltox-0.12.6-1.centos8.x86_64.rpm
+RUN yum install -y wget libXrender libXext fontconfig  && \
+    wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-3/wkhtmltox-0.12.6.1-3.almalinux9.x86_64.rpm && \
+    yum install -y ./wkhtmltox-0.12.6.1-3.almalinux9.x86_64.rpm && \
+    rm ./wkhtmltox-0.12.6.1-3.almalinux9.x86_64.rpm
 
 WORKDIR /opt/app-root/src
 
 RUN rm -rf rpms
-
 
 USER 1001
 
