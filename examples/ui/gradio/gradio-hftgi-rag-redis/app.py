@@ -190,13 +190,13 @@ QA_CHAIN_PROMPT = PromptTemplate(
 #     return_source_documents=True
 #     )
 
-qa_chain = RetrievalQA.from_chain_type(
-    llm,
-    chain_type='stuff',
-    retriever=rds.as_retriever(),
-    return_source_documents=True,
-    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
-)
+# qa_chain = RetrievalQA.from_chain_type(
+#     llm,
+#     chain_type='mmr',
+#     retriever=rds.as_retriever(),
+#     return_source_documents=True,
+#     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+# )
 
 # Gradio implementation
 def ask_llm(customer, product):
