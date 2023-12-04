@@ -91,7 +91,7 @@ spec:
             - name: shm
               mountPath: /dev/shm
           terminationMessagePolicy: File
-          image: 'ghcr.io/huggingface/text-generation-inference:1.1.0'
+          image: 'ghcr.io/huggingface/text-generation-inference:1.2.0'
       volumes:
         - name: models-cache
           persistentVolumeClaim:
