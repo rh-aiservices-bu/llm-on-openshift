@@ -97,6 +97,8 @@ spec:
             - name: redis-schema
               mountPath: /opt/app-root/src/redis_schema.yaml
               subPath: redis_schema.yaml
+            - name: cache-volume
+              mountPath: /opt/app-root/src/assets/proposal-docs  
       dnsPolicy: ClusterFirst
       volumes:
         - name: redis-schema
@@ -105,6 +107,9 @@ spec:
             items:
               - key: redis_schema.yaml
                 path: redis_schema.yaml
+        - name: cache-volume
+          emptyDir:
+            sizeLimit: 2Gi        
   strategy:
     type: RollingUpdate
     rollingUpdate:
