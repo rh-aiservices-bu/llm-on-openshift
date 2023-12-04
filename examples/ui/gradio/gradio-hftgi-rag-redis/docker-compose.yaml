@@ -1,6 +1,6 @@
 services:
   gradio:
-    image: twinkllsisodia/gradio-hftgi-rag-redis10:latest
+    image: twinkllsisodia/gradio-hftgi-rag-redis15:latest
     restart: always
     platform: linux/amd64
     environment:
@@ -23,6 +23,6 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
-      -  ${PWD}/redis_schema.yaml:/opt/app-root/src/redis_schema.yaml
-      -  ${PWD}/app.py:/opt/app-root/src/app.py
-
+      - ${PWD}/redis_schema.yaml:/opt/app-root/src/redis_schema.yaml
+      - ${PWD}/app.py:/opt/app-root/src/app.py
+      - ${PWD}/assets/proposal-docs:/opt/app-root/src/assets/proposal-docs
