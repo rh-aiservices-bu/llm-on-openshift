@@ -25,15 +25,10 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     rm -f requirements.txt && \
     # Fix permissions to support pip in Openshift environments \
     chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
-    fix-permissions /opt/app-root -P
-
-ARG PDF_FILE_DIR=proposal-docs
-RUN mkdir -p ${PDF_FILE_DIR} && \
-    chown 1001:0 ${PDF_FILE_DIR} && \
-    chmod 755 ${PDF_FILE_DIR}
+    fix-permissions /opt/app-root -P   
 
 COPY --chown=1001:0 app.py ./
-COPY --chown=1001:0 assets/ ./assets/
+COPY --chown=1001:0 assets/ ./assets/ 
 
 EXPOSE 7860
 
