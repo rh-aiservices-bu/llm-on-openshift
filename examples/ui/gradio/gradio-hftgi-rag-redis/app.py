@@ -161,16 +161,19 @@ llm = HuggingFaceTextGenInference(
 
 
 prompt_template="""<s>[INST] <<SYS>>
-You are a helpful, respectful and honest assistant named HatBot helping users to generate project proposal for various products owned by Red Hat.
-You will be given a product and the customer information, and a context to provide you with information. You must generate the proposal based as much as possible on this context.
-Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
+Generate project proposal for the product owned by Red Hat.
+You will be given a product and the customer information, and a context to provide you with information. 
+You must generate the proposal based as much as possible on this context.
 
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-Do not provide any information thats not correct and out of context provided.
+Proposal should be addressed to the customer and should be from the company owning the product.
 
-The proposal should contain headings and sub-headings and each heading and sub-heading should be in bold.
+The proposal should include an overview of the product restricted to three items, its features and benefits restricted to three items.
+The proposal should also include pricing strategy.
 
-Proposal should be minimum of 200 lines.
+The proposal should contain headings and sub-headings and each heading and sub-heading should be in bold. 
+Each section should contain only three items.
+
+Proposal should be minimum of 500 lines.
 <</SYS>>
 
 Question: {question}
@@ -181,30 +184,26 @@ QA_CHAIN_PROMPT = PromptTemplate(
     template=prompt_template,
     input_variables=["context", "question"])
 
-# qa_chain = RetrievalQA.from_chain_type(
-#     llm,
-#     retriever=rds.as_retriever(
-#         search_type="similarity",
-#         search_kwargs={"k": 4, "distance_threshold": 0.5}),
-#     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
-#     return_source_documents=True
-#     )
-
 qa_chain = RetrievalQA.from_chain_type(
     llm,
-    chain_type='stuff',
-    retriever=rds.as_retriever(),
-    return_source_documents=True,
-    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
-)
+    retriever=rds.as_retriever(
+        search_type="similarity",
+        search_kwargs={"k": 4, "distance_threshold": 0.5}),
+    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
+    return_source_documents=True
+    )
+
+# qa_chain = RetrievalQA.from_chain_type(
+#     llm,
+#     chain_type='stuff',
+#     retriever=rds.as_retriever(),
+#     return_source_documents=True,
+#     chain_type_kwargs={"prompt": QA_CHAIN_PROMPT}
+# )
 
 # Gradio implementation
 def ask_llm(customer, product):
-    query = f"""Please generate a sales proposal for the {product} product to sell to {customer} as a customer.
-             Proposal should be addressed to {customer} and should be from the company owning the {product} product.
-             The proposal should include pricing strategy, marketing plan, and details on the unique features of {product}. 
-             The proposal should include an overview of the {product} product, its features and benefits, and support options.
-            """
+    query = f"Generate a Sales Proposal for the product '{product}' to sell to company '{customer}' that includes overview, features, benefits, and support options?"
     for next_token, content in stream(query):
         yield(content)
 
@@ -233,7 +232,7 @@ with gr.Blocks(title="HatBot") as demo:
         
     download_button.click(lambda: [], inputs=[])
     submit_button.click(ask_llm, inputs=[customer_box, product_dropdown], outputs=[output_answer])
-    clear_button.click(lambda: [None, None ,None , None], 
+    clear_button.click(lambda: [None, None ,None , None, None], 
                        inputs=[], 
                        outputs=[customer_box,product_dropdown,output_answer,radio,output_rating])
 
