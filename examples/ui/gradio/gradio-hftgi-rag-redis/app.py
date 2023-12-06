@@ -65,8 +65,6 @@ def get_model_id():
             end_time = time.perf_counter()
     return model_id
 
-global path
-
 model_id = get_model_id()
 # PDF Generation
 def get_pdf_file(session_id):
@@ -108,7 +106,6 @@ def stream(input_text, session_id) -> Generator:
         resp = qa_chain({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
         create_pdf(resp['result'], session_id)
-        #q.put({"filename": pdf.output_filename})
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
             for source in sources:
@@ -129,7 +126,7 @@ def stream(input_text, session_id) -> Generator:
                 break           
             if isinstance(next_token, str):
                 content += next_token
-                yield next_token, content#, filename
+                yield next_token, content
         except Empty:
             continue
 
