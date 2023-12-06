@@ -211,7 +211,7 @@ def ask_llm(customer, product):
     query = f"Generate a Sales Proposal for the product '{product}' to sell to company '{customer}' that includes overview, features, benefits, and support options?"
     for next_token, content in stream(query, session_id):
         # Generate the download link HTML
-        download_link_html = f'<a href="{get_pdf_file(session_id)}">Download PDF</a>'
+        download_link_html = f'<a href="/file={get_pdf_file(session_id)}">Download PDF</a>'
         yield content, download_link_html    
 
 
