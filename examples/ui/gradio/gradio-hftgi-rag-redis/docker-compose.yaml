@@ -1,6 +1,6 @@
 services:
   gradio:
-    image: twinkllsisodia/gradio-hftgi-rag-redis15:latest
+    image: twinkllsisodia/gradio-hftgi-rag-redis21:latest
     restart: always
     platform: linux/amd64
     environment:
