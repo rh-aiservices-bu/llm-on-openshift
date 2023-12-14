@@ -19,7 +19,7 @@ load_dotenv()
 
 # Parameters
 
-APP_TITLE = os.getenv('APP_TITLE', 'Talk with your documentation')
+APP_TITLE = os.getenv('APP_TITLE', 'Talk with Red Hat Training')
 
 INFERENCE_SERVER_URL = os.getenv('INFERENCE_SERVER_URL')
 MAX_NEW_TOKENS = int(os.getenv('MAX_NEW_TOKENS', 512))
@@ -46,11 +46,20 @@ class QueueCallback(BaseCallbackHandler):
         return self.q.empty()
 
 def remove_source_duplicates(input_list):
+    from pprint import pprint
     unique_list = []
     for item in input_list:
-        if item.metadata['source'] not in unique_list:
-            unique_list.append(item.metadata['source'])
+        metadata_as_str = metadata_to_string(item.metadata)
+        if metadata_as_str not in unique_list:
+            unique_list.append(metadata_as_str)
     return unique_list
+
+def metadata_to_string(metadata):
+    source = metadata.get("source", "")
+    source = source.replace("pdf/", "")
+    # Start counting pages at 1, not 0. If no page is given, then display 0
+    page = metadata.get("page", -1) + 1
+    return f"{source}, page {page}"
 
 def stream(input_text) -> Generator:
     # Create a Queue
@@ -114,7 +123,7 @@ llm = HuggingFaceTextGenInference(
 
 # Prompt
 template="""<s>[INST] <<SYS>>
-You are a helpful, respectful and honest assistant named HatBot answering questions about OpenShift Data Science, aka RHODS.
+You are a helpful, respectful and honest assistant named RedHatTrainingBot answering questions about the Red Hat products and technologies ecosystem.
 You will be given a question you need to answer, and a context to provide you with information. You must answer the question based as much as possible on this context.
 Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
 
@@ -140,7 +149,7 @@ def ask_llm(message, history):
     for next_token, content in stream(message):
         yield(content)
 
-with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
+with gr.Blocks(title="RedHatTrainingBot", css="footer {visibility: hidden}") as demo:
     chatbot = gr.Chatbot(
         show_label=False,
         avatar_images=(None,'assets/robot-head.svg'),
@@ -157,8 +166,18 @@ with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
         )
 
 if __name__ == "__main__":
+
+    auth_user = os.getenv("AUTH_USER")
+    auth_password = os.getenv("AUTH_PASSWORD")
+    if auth_user and auth_password:
+        print("Enabling basic authentication with AUTH_USER/AUTH_PASSWORD")
+        auth = (auth_user, auth_password)
+    else:
+        auth = None
+
     demo.queue().launch(
         server_name='0.0.0.0',
         share=False,
-        favicon_path='./assets/robot-head.ico'
-        )
+        favicon_path='./assets/robot-head.ico',
+        auth=auth
+    )
