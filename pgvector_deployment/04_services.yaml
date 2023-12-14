@@ -4,7 +4,7 @@ metadata:
   name: postgresql
 spec:
   selector:
-    name: postgresql
+    app: postgresql
   ports:
     - name: postgresql
       protocol: TCP
