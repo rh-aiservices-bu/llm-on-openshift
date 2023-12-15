@@ -140,8 +140,8 @@ qa_chain = RetrievalQA.from_chain_type(
     retriever=store.as_retriever(
         search_type="similarity_score_threshold",
         search_kwargs={"k": 4, "score_threshold": 0.2 }),
-    chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
-    return_source_documents=True
+        chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
+        return_source_documents=True
     )
 
 # Gradio implementation
@@ -153,8 +153,9 @@ with gr.Blocks(title="RedHatTrainingBot", css="footer {visibility: hidden}") as 
     chatbot = gr.Chatbot(
         show_label=False,
         avatar_images=(None,'assets/robot-head.svg'),
-        render=False
-        )
+        render=False,
+        show_copy_button=True,
+    )
     gr.ChatInterface(
         ask_llm,
         chatbot=chatbot,
@@ -163,7 +164,7 @@ with gr.Blocks(title="RedHatTrainingBot", css="footer {visibility: hidden}") as 
         undo_btn=None,
         stop_btn=None,
         description=APP_TITLE
-        )
+    )
 
 if __name__ == "__main__":
 
