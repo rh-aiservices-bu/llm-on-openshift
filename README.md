@@ -12,6 +12,10 @@ Two different Inference Servers deployment instructions are available:
 - [vLLM](vllm_deployment/README.md): How to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
 - [Hugging Face Text Generation Inference](hf_tgis_deployment/README.md): How to deploy the Text Generation Inference server from Hugging Face.
 
+### Serving Runtimes deployment
+
+- [vLLM Serving Runtime](vllm_runtime/README.md): How to deploy a [vLLM](https://docs.vllm.ai/en/latest/index.html) runtime in the Single-Model Serving stack of Open Data Hub or OpenShift AI.
+
 ### Vector Databases deployment
 
 Deployments of different databases that can be used as a Vector Store are available:
