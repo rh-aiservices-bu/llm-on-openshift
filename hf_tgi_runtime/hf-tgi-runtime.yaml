@@ -1,0 +1,40 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+labels:
+  opendatahub.io/dashboard: "true"
+metadata:
+  annotations:
+    openshift.io/display-name: "HF-TGI"
+  name: hf-tgi-runtime
+spec:
+  containers:
+    - name: kserve-container
+      image: ghcr.io/huggingface/text-generation-inference:1.4.0
+      command: ["text-generation-launcher"]
+      args:
+        - "--model-id=/mnt/models/"
+        - "--port=8080"
+      #resources: # configure as required
+      #  requests:
+      #    nvidia.com/gpu: 1
+      #  limits:
+      #    nvidia.com/gpu: 1
+      readinessProbe:
+        exec:
+          command:
+            - curl
+            - localhost:8080/health
+        initialDelaySeconds: 30
+      livenessProbe:
+        exec:
+          command:
+            - curl
+            - localhost:8080/health
+        initialDelaySeconds: 30
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+  multiModel: false
+  supportedModelFormats:
+    - autoSelect: true
+      name: pytorch
