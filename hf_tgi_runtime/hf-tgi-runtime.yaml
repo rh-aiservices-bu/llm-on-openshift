@@ -1,10 +1,6 @@
 apiVersion: serving.kserve.io/v1alpha1
 kind: ServingRuntime
-labels:
-  opendatahub.io/dashboard: "true"
 metadata:
-  annotations:
-    openshift.io/display-name: "HF-TGI"
   name: hf-tgi-runtime
 spec:
   containers:
@@ -13,26 +9,33 @@ spec:
       command: ["text-generation-launcher"]
       args:
         - "--model-id=/mnt/models/"
-        - "--port=8080"
+        - "--port=3000"
+      env:
+      - name: HF_HOME
+        value: /tmp/hf_home
+      - name: HUGGINGFACE_HUB_CACHE
+        value: /tmp/hf_hub_cache
+      - name: TRANSFORMER_CACHE
+        value: /tmp/transformers_cache
       #resources: # configure as required
       #  requests:
       #    nvidia.com/gpu: 1
       #  limits:
       #    nvidia.com/gpu: 1
-      readinessProbe:
+      readinessProbe: # Use exec probes instad of httpGet since the probes' port gets rewritten to the containerPort
         exec:
           command:
             - curl
-            - localhost:8080/health
+            - localhost:3000/health
         initialDelaySeconds: 30
       livenessProbe:
         exec:
           command:
             - curl
-            - localhost:8080/health
+            - localhost:3000/health
         initialDelaySeconds: 30
       ports:
-        - containerPort: 8080
+        - containerPort: 3000
           protocol: TCP
   multiModel: false
   supportedModelFormats:

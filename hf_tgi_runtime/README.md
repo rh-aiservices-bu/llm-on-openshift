@@ -22,6 +22,8 @@ This runtime can be used in the exact same way as the out of the box ones:
 - Make sure you have added a GPU to your GPU configuration, that you have enough VRAM (GPU memory) to load the model, and that you have enough standard memory (RAM). Although the model loads into the GPU, RAM is still used for the pre-loading operations.
 - Once the model is loaded, you can access the inference endpoint provided through the dashboard.
 
+Note: Model files must contain the model weights in .safetensors format. Normally HF TGI will convert .bin to .safetensor at runtime if they are unavailable, but because the /mnt/models directory is not writeable this will fail. You can do this conversion offline before copying your model files to the object store.
+
 ## Usage
 
 Curl, Python, and GUI  examples are provided [here](https://huggingface.co/docs/text-generation-inference/basic_tutorials/consuming_tgi).
