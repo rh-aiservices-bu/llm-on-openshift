@@ -23,7 +23,7 @@ sentencepiece = "~=0.1.99"
 torch = {version = "==2.1.2+cu121", index = "pytorch"}
 transformers = "~=4.36.1"
 uvicorn = {extras = ["standard"], version = "==0.24.0.post1"}
-vllm = "~=0.2.5"
+vllm = "~=0.2.7"
 xformers = "==0.0.23.post1"
 
 [dev-packages]
