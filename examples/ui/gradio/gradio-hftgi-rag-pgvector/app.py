@@ -142,7 +142,7 @@ def ask_llm(message, history):
     for next_token, content in stream(message):
         yield(content)
 
-with gr.Blocks(title="HatBot", css="footer {visibility: hidden}") as demo:
+with gr.Blocks(title="RHOAI HatBot", css="footer {visibility: hidden}") as demo:
     chatbot = gr.Chatbot(
         show_label=False,
         avatar_images=(None,'assets/robot-head.svg'),
