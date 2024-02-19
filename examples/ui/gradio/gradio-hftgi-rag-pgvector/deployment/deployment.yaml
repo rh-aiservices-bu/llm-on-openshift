@@ -56,7 +56,7 @@ spec:
             - name: DB_CONNECTION_STRING
               value: 'postgresql+psycopg://user:password@postgresql-server:5432/vectordb'
             - name: DB_COLLECTION_NAME
-              values: 'documents_test'
+              value: 'documents_test'
             - name: MAX_NEW_TOKENS
               value: '512'
             - name: TOP_K
