@@ -10,7 +10,7 @@ Two different Inference Servers deployment instructions are available:
 
 - [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): How to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
 - [vLLM](vllm_deployment/README.md): How to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
-- [Hugging Face Text Generation Inference](hf_tgis_deployment/README.md): How to deploy the Text Generation Inference server from Hugging Face.
+- [Hugging Face Text Generation Inference](hf_tgi_deployment/README.md): How to deploy the Text Generation Inference server from Hugging Face.
 
 ### Serving Runtimes deployment
 
