@@ -4,6 +4,8 @@ Example deployment of the [Text Generation Inference](https://github.com/hugging
 
 The server goes in pair with the [text-generation](https://pypi.org/project/text-generation/) library to easily consume the service.
 
+A notebook example using Langchain is available [here](../../examples/notebooks/langchain/Langchain-HFTGI-Prompt-memory.ipynb).
+
 ## Basic Installation
 
 The basic installation deploys the [Flan-t5-XL](https://huggingface.co/google/flan-t5-xl) model, using quantization. Although on the smaller side of LLMs, it will still require a GPU to work properly in a fast enough manner. See [Advanced installation](#advanced-installation) for instructions on how to change the model as well as various settings.

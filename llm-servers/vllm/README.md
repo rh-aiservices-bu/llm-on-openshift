@@ -2,11 +2,11 @@
 
 Example deployment of the [vLLM](https://github.com/vllm-project/vllm) server for OpenShift.
 
-This deployment uses a UBI9 image defined in `Containerfile` and accessible at `quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.0.1`.
+This deployment uses a UBI9 image defined in `Containerfile` and accessible at `quay.io/rh-aiservices-bu/vllm-openai-ubi9` (check for the latest version available).
 
 This image implement the OpenAI API interface for maximum compatibility with other tools. See [here](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server) for more information.
 
-A notebook example using Langchain is available [here](../examples/notebooks/langchain/Langchain-vLLM-Prompt-memory.ipynb).
+A notebook example using Langchain is available [here](../../examples/notebooks/langchain/Langchain-vLLM-Prompt-memory.ipynb).
 
 ## Installation
 

@@ -1,24 +1,27 @@
 # LLM on OpenShift
 
-In this repo you will find resources, demos, recipes... to work with LLMs on OpenShift with OpenShift Data Science or Open Data Hub.
+In this repo you will find resources, demos, recipes... to work with LLMs on OpenShift with [OpenShift AI](https://www.redhat.com/en/technologies/cloud-computing/openshift/openshift-ai) or [Open Data Hub](https://opendatahub.io/).
 
 ## Content
 
-### Inference Servers deployment
+### Inference Servers
 
-Two different Inference Servers deployment instructions are available:
+The following **Inference Servers** for LLMs can be deployed standalone on OpenShift:
 
-- [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): How to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
-- [vLLM](vllm_deployment/README.md): How to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
-- [Hugging Face Text Generation Inference](hf_tgis_deployment/README.md): How to deploy the Text Generation Inference server from Hugging Face.
+- [vLLM](llm-servers/vllm/README.md): how to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
+- [Hugging Face TGI](llm-servers/hf_tgi/README.md): how to deploy the [Text Generation Inference](https://github.com/huggingface/text-generation-inference) server from Hugging Face.
+- [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): how to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
 
 ### Serving Runtimes deployment
 
-- [vLLM Serving Runtime](vllm_runtime/README.md): How to deploy a [vLLM](https://docs.vllm.ai/en/latest/index.html) runtime in the Single-Model Serving stack of Open Data Hub or OpenShift AI.
+The following **Runtimes** can be imported in the Single-Model Serving stack of Open Data Hub or OpenShift AI.
 
-### Vector Databases deployment
+- [vLLM Serving Runtime](serving-runtimes/vllm_runtime/README.md)
+- [Hugging Face Text Generation Inference](serving-runtimes/hf_tgi_runtime/README.md)
 
-Deployments of different databases that can be used as a Vector Store are available:
+### Vector Databases
+
+The following **Databases** can be used as a Vector Store for Retrieval Augmented Generation (RAG) applications:
 
 - [PostgreSQL+pgvector](pgvector_deployment/README.md): Full recipe to create an instance of PostgreSQL with the pgvector extension, making it usable as a vector store.
 - [Redis](redis_deployment/README.md): Full recipe to deploy Redis, create a Cluster and a suitable Database for a Vector Store.
@@ -26,6 +29,6 @@ Deployments of different databases that can be used as a Vector Store are availa
 ### Inference and application examples
 
 - [Caikit](examples/notebooks/caikit-basic-query/README.md): Basic example demonstrating how to work with Caikit+TGIS for LLM serving.
-- [Langchain examples](examples/notebooks/langchain/README.md): Various notebooks demonstrating how to work with [Langchain](https://www.langchain.com/). Examples include both HFTGI and Caikit+TGIS Serving.
+- [Langchain examples](examples/notebooks/langchain/README.md): Various notebooks demonstrating how to work with [Langchain](https://www.langchain.com/). Examples are provided for different types of LLM servers (standalone or using the Single-Model Serving stack of Open Data Hub or OpenShift AI) and different vector databases.
 - [Langflow examples](examples/langflow/README.md): Various examples demonstrating how to work with Langflow.
 - [UI examples](examples/ui/README.md): Various examples on how to create and deploy a UI to interact with your LLM.

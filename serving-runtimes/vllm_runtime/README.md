@@ -9,6 +9,7 @@ Note that as this runtime is specifically meant to run LLMs and uses custom kern
 You must first make sure that you have properly installed the necessary component of the Single-Model Serving stack, as documented [here](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2-latest/html/working_on_data_science_projects/serving-large-language-models_serving-large-language-models#about-the-single-model-serving-platform_serving-large-language-models).
 
 Once the stack is installed, adding the runtime is pretty straightforward:
+
 - As an admin, in the OpenShift AI Dashboard, open the menu `Settings -> Serving runtimes`.
 - Click on `Add serving runtime`.
 - For the type of model serving platforms this runtime supports, select `Single model serving platform`.
@@ -19,6 +20,7 @@ The runtime is now available when deploying a model.
 ## Model Deployment
 
 This runtime can be used in the exact same way as the out of the box ones:
+
 - Copy your model files in an object store bucket.
 - Deploy the model from the Dashboard.
 - Make sure you have added a GPU to your GPU configuration, that you have enough VRAM (GPU memory) to load the model, and that you have enough standard memory (RAM). Although the model loads into the GPU, RAM is still used for the pre-loading operations.
