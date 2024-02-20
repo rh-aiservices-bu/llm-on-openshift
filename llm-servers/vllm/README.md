@@ -19,9 +19,9 @@ Automated Deployment:
 Manual Deployment (from the `gitops` folder):
 
 - Create PVC named `vllm-models-cache` with enough space to hold all the models you want to try.
-- Create the Deployment using the file [deployment.yaml](deployment.yaml).
-- Create the Service using file [service.yaml](service.yaml).
-- If you want to expose the server outside of your OpenShift cluster, create the Route with the file [route.yaml](route.yaml)
+- Create the Deployment using the file [deployment.yaml](gitops/deployment.yaml).
+- Create the Service using file [service.yaml](gitops/service.yaml).
+- If you want to expose the server outside of your OpenShift cluster, create the Route with the file [route.yaml](gitops/route.yaml)
 
 The API is now accessible at the endpoints:
 
