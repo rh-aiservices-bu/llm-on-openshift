@@ -1,0 +1,45 @@
+From 0e17b0b27e75c6cd60c13bb245bc43f60c021fe7 Mon Sep 17 00:00:00 2001
+From: Mustafa Eyceoz <meyceoz@redhat.com>
+Date: Tue, 20 Feb 2024 17:14:48 -0500
+Subject: [PATCH] Added early stopping to completion APIs
+
+---
+ vllm/entrypoints/openai/protocol.py | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/vllm/entrypoints/openai/protocol.py b/vllm/entrypoints/openai/protocol.py
+index fc15b7833e..2cf213b427 100644
+--- a/vllm/entrypoints/openai/protocol.py
++++ b/vllm/entrypoints/openai/protocol.py
+@@ -71,6 +71,7 @@ class ChatCompletionRequest(BaseModel):
+     top_k: Optional[int] = -1
+     ignore_eos: Optional[bool] = False
+     use_beam_search: Optional[bool] = False
++    early_stopping: Optional[bool] = False
+     stop_token_ids: Optional[List[int]] = Field(default_factory=list)
+     skip_special_tokens: Optional[bool] = True
+     spaces_between_special_tokens: Optional[bool] = True
+@@ -97,6 +98,7 @@ def to_sampling_params(self) -> SamplingParams:
+             top_k=self.top_k,
+             ignore_eos=self.ignore_eos,
+             use_beam_search=self.use_beam_search,
++            early_stopping=self.early_stopping,
+             skip_special_tokens=self.skip_special_tokens,
+             spaces_between_special_tokens=self.spaces_between_special_tokens,
+             include_stop_str_in_output=self.include_stop_str_in_output,
+@@ -126,6 +128,7 @@ class CompletionRequest(BaseModel):
+     top_k: Optional[int] = -1
+     ignore_eos: Optional[bool] = False
+     use_beam_search: Optional[bool] = False
++    early_stopping: Optional[bool] = False
+     stop_token_ids: Optional[List[int]] = Field(default_factory=list)
+     skip_special_tokens: Optional[bool] = True
+     spaces_between_special_tokens: Optional[bool] = True
+@@ -153,6 +156,7 @@ def to_sampling_params(self):
+             max_tokens=self.max_tokens if not echo_without_generation else 1,
+             logprobs=self.logprobs,
+             use_beam_search=self.use_beam_search,
++            early_stopping=self.early_stopping,
+             prompt_logprobs=self.logprobs if self.echo else None,
+             skip_special_tokens=self.skip_special_tokens,
+             spaces_between_special_tokens=(self.spaces_between_special_tokens),

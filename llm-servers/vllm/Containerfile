@@ -95,6 +95,11 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
     fix-permissions /opt/app-root -P
 
+COPY 2939.patch /tmp/2939.patch
+
+# Fix while waiting for https://github.com/vllm-project/vllm/pull/2939 to be merged \
+RUN patch /opt/app-root/lib/python3.11/site-packages/vllm/entrypoints/openai/protocol.py /tmp/2939.patch
+
 EXPOSE 8000
 
 ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server"]
