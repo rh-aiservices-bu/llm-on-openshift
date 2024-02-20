@@ -17,14 +17,16 @@ numpy = "~=1.26.2"
 pandas = "~=2.1.4"
 psutil = "~=5.9.7"
 pyarrow = "~=14.0.1"
-pydantic = "~=1.10.13"
-ray = "~=2.8.1"
+pydantic = "~=2.6.1"
+ray = "~=2.9.2"
 sentencepiece = "~=0.1.99"
 torch = {version = "==2.1.2+cu121", index = "pytorch"}
-transformers = "~=4.36.1"
+transformers = "~=4.37.2"
 uvicorn = {extras = ["standard"], version = "==0.24.0.post1"}
-vllm = "~=0.2.7"
+vllm = "~=0.3.1"
 xformers = "==0.0.23.post1"
+pynvml = "==11.5.0"
+cupy-cuda12x = "==12.1.0"
 
 [dev-packages]
 
