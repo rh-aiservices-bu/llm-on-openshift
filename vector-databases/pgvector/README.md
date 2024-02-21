@@ -40,4 +40,4 @@ If the command succeeds, it will print `CREATE EXTENSION`.
 
 - Exit the terminal
 
-Your vector database is now ready to use! Head to the [notebooks section](../examples/notebooks/) for examples on how to use it.
+Your vector database is now ready to use! Head to the [notebooks section](../../examples/notebooks/) for examples on how to use it.
