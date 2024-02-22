@@ -6,7 +6,7 @@ Note that as this runtime is specifically meant to run LLMs and uses custom kern
 
 ## Installation
 
-You must first make sure that you have properly installed the necessary component of the Single-Model Serving stack, as documented [here](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2-latest/html/working_on_data_science_projects/serving-large-language-models_serving-large-language-models#about-the-single-model-serving-platform_serving-large-language-models).
+You must first make sure that you have properly installed the necessary component of the Single-Model Serving stack, as documented [here](https://access.redhat.com/documentation/en-us/red_hat_openshift_ai_self-managed/2-latest/html/serving_models/serving-large-language-models_serving-large-language-models#about-the-single-model-serving-platform_serving-large-language-models).
 
 Once the stack is installed, adding the runtime is pretty straightforward:
 
