@@ -1,0 +1,4 @@
+FROM milvusdb/milvus:v2.3.10
+
+RUN chgrp -R root /milvus && \
+    chmod -R g+rwx /milvus
