@@ -1,6 +1,6 @@
-# Gradio UI for RAG using Hugging Face Text Generation Inference server and PostgreSQL+pgvector
+# Gradio UI for RAG using Hugging Face Text Generation Inference server and Milvus
 
-This is a simple UI example for a RAG-based Chatbot using Gradio, Hugging Face TGI server, and PostgreSQL+pgvector as a vector database.
+This is a simple UI example for a RAG-based Chatbot using Gradio, Hugging Face TGI server, and Milvus as a vector database.
 
 You can refer to those different notebooks to get a better understanding of the flow:
 

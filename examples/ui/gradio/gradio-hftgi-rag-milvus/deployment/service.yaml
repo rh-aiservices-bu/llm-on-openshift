@@ -1,9 +1,9 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: gradio-hftgi-rag-pgvector
+  name: gradio-hftgi-rag-milvus
   labels:
-    app: gradio-hftgi-rag-pgvector
+    app: gradio-hftgi-rag-milvus
 spec:
   clusterIP: None
   ipFamilies:
@@ -17,4 +17,4 @@ spec:
   ipFamilyPolicy: SingleStack
   sessionAffinity: None
   selector:
-    app: gradio-hftgi-rag-pgvector
+    app: gradio-hftgi-rag-milvus

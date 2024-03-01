@@ -1,19 +1,19 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: gradio-hftgi-rag-pgvector
+  name: gradio-hftgi-rag-milvus
   labels:
-    app: gradio-hftgi-rag-pgvector
+    app: gradio-hftgi-rag-milvus
 spec:
   replicas: 0
   selector:
     matchLabels:
-      app: gradio-hftgi-rag-pgvector
+      app: gradio-hftgi-rag-milvus
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: gradio-hftgi-rag-pgvector
+        app: gradio-hftgi-rag-milvus
     spec:
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -98,7 +98,7 @@ spec:
             successThreshold: 1
             failureThreshold: 24
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-rag-pgvector:latest'
+          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-rag-milvus:latest'
           volumeMounts:
             - name: collections
               mountPath: /opt/app-root/src/collections.json
