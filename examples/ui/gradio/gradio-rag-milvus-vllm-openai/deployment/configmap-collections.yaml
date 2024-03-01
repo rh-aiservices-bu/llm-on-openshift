@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: collections
+data:
+  collections.json: |-
+    [
+      {"name":"none","display_name":"None"},
+      {"name":"collection_1","display_name":"Collection 1"},
+      {"name":"collection_2","display_name":"Collection 2"}
+    ]
