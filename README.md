@@ -23,8 +23,9 @@ The following **Runtimes** can be imported in the Single-Model Serving stack of 
 
 The following **Databases** can be used as a Vector Store for Retrieval Augmented Generation (RAG) applications:
 
-- [PostgreSQL+pgvector](pgvector_deployment/README.md): Full recipe to create an instance of PostgreSQL with the pgvector extension, making it usable as a vector store.
-- [Redis](redis_deployment/README.md): Full recipe to deploy Redis, create a Cluster and a suitable Database for a Vector Store.
+- [Milvus](vector-databases/milvus/README.md): Full recipe to deploy the Milvus vector store, in standalone or cluster mode.
+- [PostgreSQL+pgvector](vector-databases/pgvector/README.md): Full recipe to create an instance of PostgreSQL with the pgvector extension, making it usable as a vector store.
+- [Redis](vector-databases/redis/README.md): Full recipe to deploy Redis, create a Cluster and a suitable Database for a Vector Store.
 
 ### Inference and application examples
 
