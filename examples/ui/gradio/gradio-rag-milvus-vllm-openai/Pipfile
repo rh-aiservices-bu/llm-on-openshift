@@ -13,6 +13,7 @@ torch = {version = "==2.2.1+cu121", index = "pytorch"}
 einops = "==0.7.0"
 gradio = "~=4.19.2"
 langchain = "==0.1.9"
+openai = "==1.13.3"
 pymilvus = "==2.3.6"
 sentence-transformers = "~=2.4.0"
 text-generation = "~=0.6.1"

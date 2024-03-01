@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import RetrievalQA
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
-from langchain_community.llms import HuggingFaceTextGenInference
+from langchain_community.llms import VLLMOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_community.vectorstores import Milvus
 
@@ -20,15 +20,14 @@ load_dotenv()
 
 # Parameters
 
-APP_TITLE = os.getenv('APP_TITLE', 'Talk with your documentation')
+APP_TITLE = os.getenv('APP_TITLE', 'Chat with your Knowledge Base!')
 
 INFERENCE_SERVER_URL = os.getenv('INFERENCE_SERVER_URL')
-MAX_NEW_TOKENS = int(os.getenv('MAX_NEW_TOKENS', 512))
-TOP_K = int(os.getenv('TOP_K', 10))
+MODEL_NAME = os.getenv('MODEL_NAME')
+MAX_TOKENS = int(os.getenv('MAX_TOKENS', 512))
 TOP_P = float(os.getenv('TOP_P', 0.95))
-TYPICAL_P = float(os.getenv('TYPICAL_P', 0.95))
 TEMPERATURE = float(os.getenv('TEMPERATURE', 0.01))
-REPETITION_PENALTY = float(os.getenv('REPETITION_PENALTY', 1.03))
+PRESENCE_PENALTY = float(os.getenv('PRESENCE_PENALTY', 1.03))
 
 MILVUS_HOST = os.getenv('MILVUS_HOST')
 MILVUS_PORT = os.getenv('MILVUS_PORT')
@@ -36,13 +35,11 @@ MILVUS_USERNAME = os.getenv('MILVUS_USERNAME')
 MILVUS_PASSWORD = os.getenv('MILVUS_PASSWORD')
 MILVUS_COLLECTIONS_FILE = os.getenv('MILVUS_COLLECTIONS_FILE')
 
-SELECTED_COLLECTION = 'red_hat_openshift_ai_self_managed_2_6'
+DEFAULT_COLLECTION = os.getenv('DEFAULT_COLLECTION')
 
 # Load array of objects from JSON file
 with open(MILVUS_COLLECTIONS_FILE, 'r') as file:
     collections_data = json.load(file)
-
-#MILVUS_COLLECTION = "red_hat_openshift_ai_self_managed_2_6"
 
 # Streaming implementation
 class QueueCallback(BaseCallbackHandler):
@@ -70,7 +67,8 @@ def stream(input_text) -> Generator:
 
     # Create a function to call - this will run in a thread
     def task():
-        resp = qa_chain[SELECTED_COLLECTION].invoke({"query": input_text})
+        print(f"Selected collection: {selected_collection}")
+        resp = qa_chain[selected_collection].invoke({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
@@ -123,14 +121,14 @@ for collection in collections_data:
         )
 
 # LLM
-llm = HuggingFaceTextGenInference(
-    inference_server_url=INFERENCE_SERVER_URL,
-    max_new_tokens=MAX_NEW_TOKENS,
-    top_k=TOP_K,
+llm =  VLLMOpenAI(
+    openai_api_key="EMPTY",
+    openai_api_base=INFERENCE_SERVER_URL,
+    model_name=MODEL_NAME,
+    max_tokens=MAX_TOKENS,
     top_p=TOP_P,
-    typical_p=TYPICAL_P,
     temperature=TEMPERATURE,
-    repetition_penalty=REPETITION_PENALTY,
+    presence_penalty=PRESENCE_PENALTY,
     streaming=True,
     verbose=False,
     callbacks=[QueueCallback(q)]
@@ -158,32 +156,45 @@ for collection in collections_data:
     qa_chain[collection['name']] = RetrievalQA.from_chain_type(
         llm,
         retriever = stores[collection['name']].as_retriever(
-        search_type="similarity",
-        search_kwargs={"k": 4}
-        ),
+            search_type="similarity",
+            search_kwargs={"k": 4}
+            ),
         chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
         return_source_documents=True
         )
 
 # Gradio implementation
+collection_options = [(collection['display_name'], collection['name']) for collection in collections_data]
+selected_collection = DEFAULT_COLLECTION
+
+def select_collection(collection_name):
+    global selected_collection
+    selected_collection = collection_name
+
 def ask_llm(message, history):
     for next_token, content in stream(message):
         yield(content)
 
-with gr.Blocks(title="Red Hat Documentation Chatbot", css="footer {visibility: hidden}") as demo:
+with gr.Blocks(title="Knowledge base backed Chatbot", css="footer {visibility: hidden}") as demo:
     with gr.Row():
         gr.Markdown(f"## {APP_TITLE}")
     with gr.Row():
         with gr.Column(scale=1):
-            gr.Markdown(f"This chatbot is ...")
-            gr.Dropdown(
-            ["cat", "dog", "bird"], label="Animal", info="Will add more animals later!"
-            ),
+            gr.Markdown(f"This chatbot lets you chat with a Large Language Model (LLM) that can be backed by different knowledge bases (or none).")
+            collection = gr.Dropdown(
+                choices=collection_options,
+                label="Knowledge Base:",
+                value=selected_collection,
+                interactive=True,
+                info="Choose the knowledge base the LLM will have access to:"
+            )
+            collection.input(select_collection, collection),
         with gr.Column(scale=4):
             chatbot = gr.Chatbot(
                 show_label=False,
                 avatar_images=(None,'assets/robot-head.svg'),
-                render=False
+                render=False,
+                show_copy_button=True
                 )
             gr.ChatInterface(
                 ask_llm,

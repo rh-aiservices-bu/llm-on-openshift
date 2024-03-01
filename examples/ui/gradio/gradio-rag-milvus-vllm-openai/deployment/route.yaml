@@ -1,13 +1,12 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: gradio-hftgi-rag-pgvector
+  name: gradio-rag-milvus-vllm-openai
   labels:
-    app: gradio-hftgi-rag-pgvector
-spec:
+    app: gradio-rag-milvus-vllm-openai
   to:
     kind: Service
-    name: gradio-hftgi-rag-pgvector
+    name: gradio-rag-milvus-vllm-openai
     weight: 100
   port:
     targetPort: http

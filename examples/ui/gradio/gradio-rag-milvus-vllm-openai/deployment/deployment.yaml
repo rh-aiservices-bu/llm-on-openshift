@@ -1,19 +1,19 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: gradio-hftgi-rag-pgvector
+  name: gradio-rag-milvus-vllm-openai
   labels:
-    app: gradio-hftgi-rag-pgvector
+    app: gradio-rag-milvus-vllm-openai
 spec:
   replicas: 0
   selector:
     matchLabels:
-      app: gradio-hftgi-rag-pgvector
+      app: gradio-rag-milvus-vllm-openai
   template:
     metadata:
       creationTimestamp: null
       labels:
-        app: gradio-hftgi-rag-pgvector
+        app: gradio-rag-milvus-vllm-openai
     spec:
       restartPolicy: Always
       schedulerName: default-scheduler
@@ -50,31 +50,31 @@ spec:
             failureThreshold: 3
           env:
             - name: APP_TITLE
-              value: 'Talk with your documentation'
+              value: 'Chat with your Knowledge Base'
             - name: INFERENCE_SERVER_URL
               value: 'https://your_inference_endpoint'
+            - name: MODEL_NAME
+              value: 'mistralai/Mistral-7B-Instruct-v0.2'
+            - name: MAX_TOKENS
+              value: '1024'
+            - name: TOP_P
+              value: '0.95'
+            - name: TEMPERATURE
+              value: '0.01'
+            - name: PRESENCE_PENALTY
+              value: '1.03'
             - name: MILVUS_HOST
               value: 'your_milvus_host'
             - name: MILVUS_PORT
               value: '19530'
-            - name: MILVUS_COLLECTIONS_FILE
-              value: '/opt/app-root/src/collections.json'
             - name: MILVUS_USERNAME
               value: 'your_milvus_username'
             - name: MILVUS_PASSWORD
-              value: 'your_milvus_password'  
-            - name: MAX_NEW_TOKENS
-              value: '512'
-            - name: TOP_K
-              value: '10'
-            - name: TOP_P
-              value: '0.95'
-            - name: TYPICAL_P
-              value: '0.95'
-            - name: TEMPERATURE
-              value: '0.01'
-            - name: REPETITION_PENALTY
-              value: '1.03'
+              value: 'your_milvus_password'
+            - name: MILVUS_COLLECTIONS_FILE
+              value: '/opt/app-root/src/collections.json'
+            - name: DEFAULT_COLLECTION
+              value: 'none'
           securityContext:
             capabilities:
               drop:
@@ -98,7 +98,7 @@ spec:
             successThreshold: 1
             failureThreshold: 24
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/gradio-hftgi-rag-pgvector:latest'
+          image: 'quay.io/rh-aiservices-bu/gradio-rag-milvus-vllm-openai:latest'
           volumeMounts:
             - name: collections
               mountPath: /opt/app-root/src/collections.json

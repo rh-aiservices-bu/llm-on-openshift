@@ -82,6 +82,8 @@ chat_response = client.chat.completions.create(
 print("Chat response:", chat_response)
 ```
 
+You can also find a notebook example using Langchain to query vLLM in this repo [here](../../examples/notebooks/langchain/Langchain-vLLM-Prompt-memory.ipynb).
+
 ## Advanced installation
 
 ### Parameters
