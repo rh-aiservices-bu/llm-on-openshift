@@ -112,7 +112,7 @@ embeddings = HuggingFaceEmbeddings(
 )
 
 stores = {}
-for collection in collections_data:
+for collection in collections_data["collections"]:
     stores[collection['name']] = Milvus(
         embedding_function=embeddings,
         connection_args={"host": MILVUS_HOST, "port": MILVUS_PORT, "user": MILVUS_USERNAME, "password": MILVUS_PASSWORD},
@@ -154,7 +154,7 @@ QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
 
 qa_chain = {}
-for collection in collections_data:
+for collection in collections_data["collections"]:
     qa_chain[collection['name']] = RetrievalQA.from_chain_type(
         llm,
         retriever = stores[collection['name']].as_retriever(
