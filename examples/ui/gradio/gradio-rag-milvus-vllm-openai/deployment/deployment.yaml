@@ -24,10 +24,10 @@ spec:
         - resources:
             limits:
               cpu: '2'
-              memory: 2Gi
+              memory: 4Gi
             requests:
               cpu: '1'
-              memory: 1Gi
+              memory: 2Gi
           readinessProbe:
             httpGet:
               path: /queue/status
@@ -51,6 +51,8 @@ spec:
           env:
             - name: APP_TITLE
               value: 'Chat with your Knowledge Base'
+            - name: SHOW_TITLE_IMAGE
+              value: 'True'
             - name: INFERENCE_SERVER_URL
               value: 'https://your_inference_endpoint'
             - name: MODEL_NAME
@@ -75,6 +77,12 @@ spec:
               value: '/opt/app-root/src/collections.json'
             - name: DEFAULT_COLLECTION
               value: 'none'
+            - name: PROMPT_FILE
+              value: 'prompt.txt'
+            - name: MAX_RETRIEVED_DOCS
+              value: '4'
+            - name: SCORE_THRESHOLD
+              value: '0.99'
           securityContext:
             capabilities:
               drop:
@@ -103,13 +111,24 @@ spec:
             - name: collections
               mountPath: /opt/app-root/src/collections.json
               subPath: collections.json
+            - name: prompt
+              mountPath: /opt/app-root/src/prompt.txt
+              subPath: prompt.txt
       volumes:
         - name: collections
           configMap:
             name: collections
             items:
-            - key: collections.json
-              path: collections.json
+              - key: collections.json
+                path: collections.json
+            defaultMode: 420
+        - name: prompt
+          configMap:
+            name: prompt
+            items:
+              - key: prompt.txt
+                path: prompt.txt
+            defaultMode: 420
       dnsPolicy: ClusterFirst
   strategy:
     type: RollingUpdate

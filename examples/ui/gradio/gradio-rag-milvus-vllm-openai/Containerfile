@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt && \
     chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
     fix-permissions /opt/app-root -P
 
-COPY --chown=1001:0 app.py ./
+COPY --chown=1001:0 app.py milvus_retriever_with_score_threshold.py default_prompt.txt ./
 COPY --chown=1001:0 assets/ ./assets/
 
 EXPOSE 7860
