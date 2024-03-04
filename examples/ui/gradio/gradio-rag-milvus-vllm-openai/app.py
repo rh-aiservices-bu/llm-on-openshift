@@ -5,22 +5,27 @@ import time
 from collections.abc import Generator
 from queue import Empty, Queue
 from threading import Thread
-from typing import Optional
+from typing import Optional, List, Dict, Any
 
 import gradio as gr
 from dotenv import load_dotenv
+from langchain_core.documents import Document
+from langchain_core.embeddings import Embeddings
+from langchain_core.retrievers import BaseRetriever
 from langchain.callbacks.base import BaseCallbackHandler
 from langchain.chains import RetrievalQA
 from langchain.embeddings.huggingface import HuggingFaceEmbeddings
 from langchain_community.llms import VLLMOpenAI
 from langchain.prompts import PromptTemplate
 from langchain_community.vectorstores import Milvus
+from milvus_retriever_with_score_threshold import MilvusRetrieverWithScoreThreshold
 
 load_dotenv()
 
 # Parameters
 
 APP_TITLE = os.getenv('APP_TITLE', 'Chat with your Knowledge Base!')
+SHOW_TITLE_IMAGE = os.getenv('SHOW_TITLE_IMAGE', 'True')
 
 INFERENCE_SERVER_URL = os.getenv('INFERENCE_SERVER_URL')
 MODEL_NAME = os.getenv('MODEL_NAME')
@@ -36,12 +41,21 @@ MILVUS_PASSWORD = os.getenv('MILVUS_PASSWORD')
 MILVUS_COLLECTIONS_FILE = os.getenv('MILVUS_COLLECTIONS_FILE')
 
 DEFAULT_COLLECTION = os.getenv('DEFAULT_COLLECTION')
+PROMPT_FILE = os.getenv('PROMPT_FILE', 'default_prompt.txt')
+MAX_RETRIEVED_DOCS = int(os.getenv('MAX_RETRIEVED_DOCS', 4))
+SCORE_THRESHOLD = float(os.getenv('SCORE_THRESHOLD', 0.99))
 
-# Load array of objects from JSON file
+# Load collections from JSON file
 with open(MILVUS_COLLECTIONS_FILE, 'r') as file:
     collections_data = json.load(file)
 
-# Streaming implementation
+# Load Prompt template from txt file
+with open(PROMPT_FILE, 'r') as file:
+    prompt_template = file.read()
+
+############################
+# Streaming call functions #
+############################
 class QueueCallback(BaseCallbackHandler):
     """Callback handler for streaming LLM responses to a queue."""
 
@@ -61,14 +75,51 @@ def remove_source_duplicates(input_list):
             unique_list.append(item.metadata['source'])
     return unique_list
 
-def stream(input_text) -> Generator:
+def stream(input_text, selected_collection) -> Generator:
+    # A Queue is needed for Streaming implementation
+    q = Queue()
+
+    # Instantiate LLM
+    llm =  VLLMOpenAI(
+        openai_api_key="EMPTY",
+        openai_api_base=INFERENCE_SERVER_URL,
+        model_name=MODEL_NAME,
+        max_tokens=MAX_TOKENS,
+        top_p=TOP_P,
+        temperature=TEMPERATURE,
+        presence_penalty=PRESENCE_PENALTY,
+        streaming=True,
+        verbose=False,
+        callbacks=[QueueCallback(q)]
+    )
+
+    # Instantiate QA chain
+    retriever = MilvusRetrieverWithScoreThreshold(
+        embedding_function=embeddings,
+        collection_name=selected_collection,
+        collection_description="",
+        collection_properties=None,
+        connection_args={"host": MILVUS_HOST, "port": MILVUS_PORT, "user": MILVUS_USERNAME, "password": MILVUS_PASSWORD},
+        consistency_level="Session",
+        search_params=None,
+        k=MAX_RETRIEVED_DOCS,
+        score_threshold=SCORE_THRESHOLD,
+        metadata_field="metadata",
+        text_field="page_content"
+    )
+    qa_chain = RetrievalQA.from_chain_type(
+        llm=llm,
+        retriever=retriever,
+        chain_type_kwargs={"prompt": qa_chain_prompt},
+        return_source_documents=True
+        )
+
     # Create a Queue
     job_done = object()
 
     # Create a function to call - this will run in a thread
     def task():
-        print(f"Selected collection: {selected_collection}")
-        resp = qa_chain[selected_collection].invoke({"query": input_text})
+        resp = qa_chain.invoke({"query": input_text})
         sources = remove_source_duplicates(resp['source_documents'])
         if len(sources) != 0:
             q.put("\n*Sources:* \n")
@@ -94,12 +145,9 @@ def stream(input_text) -> Generator:
         except Empty:
             continue
 
-# A Queue is needed for Streaming implementation
-q = Queue()
-
-############################
-# LLM chain implementation #
-############################
+######################
+# LLM chain elements #
+######################
 
 # Document store: Milvus
 model_kwargs = {'trust_remote_code': True}
@@ -109,86 +157,48 @@ embeddings = HuggingFaceEmbeddings(
     show_progress=False
 )
 
-stores = {}
-for collection in collections_data:
-    stores[collection['name']] = Milvus(
-        embedding_function=embeddings,
-        connection_args={"host": MILVUS_HOST, "port": MILVUS_PORT, "user": MILVUS_USERNAME, "password": MILVUS_PASSWORD},
-        collection_name=collection['name'],
-        metadata_field="metadata",
-        text_field="page_content",
-        drop_old=False
-        )
-
-# LLM
-llm =  VLLMOpenAI(
-    openai_api_key="EMPTY",
-    openai_api_base=INFERENCE_SERVER_URL,
-    model_name=MODEL_NAME,
-    max_tokens=MAX_TOKENS,
-    top_p=TOP_P,
-    temperature=TEMPERATURE,
-    presence_penalty=PRESENCE_PENALTY,
-    streaming=True,
-    verbose=False,
-    callbacks=[QueueCallback(q)]
-)
-
 # Prompt
-template="""<s>[INST] <<SYS>>
-You are a helpful, respectful and honest assistant named HatBot answering questions.
-You will be given a question you need to answer, and a context to provide you with information. You must answer the question based as much as possible on this context.
-Always answer as helpfully as possible, while being safe. Your answers should not include any harmful, unethical, racist, sexist, toxic, dangerous, or illegal content. Please ensure that your responses are socially unbiased and positive in nature.
-
-If a question does not make any sense, or is not factually coherent, explain why instead of answering something not correct. If you don't know the answer to a question, please don't share false information.
-<</SYS>>
-
-Context: 
-{context}
-
-Question: {question} [/INST]
-"""
-QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
+qa_chain_prompt = PromptTemplate.from_template(prompt_template)
 
 
-qa_chain = {}
-for collection in collections_data:
-    qa_chain[collection['name']] = RetrievalQA.from_chain_type(
-        llm,
-        retriever = stores[collection['name']].as_retriever(
-            search_type="similarity",
-            search_kwargs={"k": 4}
-            ),
-        chain_type_kwargs={"prompt": QA_CHAIN_PROMPT},
-        return_source_documents=True
-        )
+####################
+# Gradio interface #
+####################
 
-# Gradio implementation
 collection_options = [(collection['display_name'], collection['name']) for collection in collections_data]
-selected_collection = DEFAULT_COLLECTION
 
-def select_collection(collection_name):
-    global selected_collection
-    selected_collection = collection_name
+def select_collection(collection_name, selected_collection):
+    return {
+        selected_collection_var: collection_name
+        }
 
-def ask_llm(message, history):
-    for next_token, content in stream(message):
+def ask_llm(message, history, selected_collection):
+    for next_token, content in stream(message, selected_collection):
         yield(content)
 
-with gr.Blocks(title="Knowledge base backed Chatbot", css="footer {visibility: hidden}") as demo:
+css = """
+footer {visibility: hidden}
+.title_image img {width: 80px !important}
+"""
+
+with gr.Blocks(title="Knowledge base backed Chatbot", css=css) as demo:
+    selected_collection_var = gr.State(DEFAULT_COLLECTION)
     with gr.Row():
-        gr.Markdown(f"## {APP_TITLE}")
+        if SHOW_TITLE_IMAGE == 'True':
+            gr.Markdown(f"# ![image](/file=./assets/reading-robot.png)   {APP_TITLE}")
+        else:
+            gr.Markdown(f"# {APP_TITLE}")
     with gr.Row():
         with gr.Column(scale=1):
             gr.Markdown(f"This chatbot lets you chat with a Large Language Model (LLM) that can be backed by different knowledge bases (or none).")
             collection = gr.Dropdown(
                 choices=collection_options,
                 label="Knowledge Base:",
-                value=selected_collection,
+                value=DEFAULT_COLLECTION,
                 interactive=True,
                 info="Choose the knowledge base the LLM will have access to:"
             )
-            collection.input(select_collection, collection),
+            collection.input(select_collection, inputs=[collection,selected_collection_var], outputs=[selected_collection_var]),
         with gr.Column(scale=4):
             chatbot = gr.Chatbot(
                 show_label=False,
@@ -198,6 +208,7 @@ with gr.Blocks(title="Knowledge base backed Chatbot", css="footer {visibility: h
                 )
             gr.ChatInterface(
                 ask_llm,
+                additional_inputs=[selected_collection_var],
                 chatbot=chatbot,
                 clear_btn=None,
                 retry_btn=None,
@@ -207,8 +218,11 @@ with gr.Blocks(title="Knowledge base backed Chatbot", css="footer {visibility: h
                 )
 
 if __name__ == "__main__":
-    demo.queue().launch(
+    demo.queue(
+        default_concurrency_limit=10
+        ).launch(
         server_name='0.0.0.0',
         share=False,
-        favicon_path='./assets/robot-head.ico'
+        favicon_path='./assets/robot-head.ico',
+        allowed_paths=["./assets/"]
         )
