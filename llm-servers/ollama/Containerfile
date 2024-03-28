@@ -1,8 +1,7 @@
 ARG GOLANG_VERSION=1.22.1
-ARG CMAKE_VERSION=3.22.1
 
 # Create a container with Git repo
-FROM --platform=linux/amd64 centos:7 as repo
+FROM --platform=linux/amd64 quay.io/centos/centos:stream9 as repo
 WORKDIR /
 RUN yum -y update && \
     yum -y install git && \
@@ -16,15 +15,15 @@ COPY --from=repo /ollama/.git .git
 COPY --from=repo /ollama/.gitmodules .gitmodules
 COPY --from=repo /ollama/llm llm
 
-FROM --platform=linux/amd64 centos:7 AS cpu-builder-amd64
-ARG CMAKE_VERSION
+FROM --platform=linux/amd64 quay.io/centos/centos:stream9 AS cpu-builder-amd64
 ARG GOLANG_VERSION
-COPY --from=repo /ollama/scripts/rh_linux_deps.sh /
-RUN CMAKE_VERSION=${CMAKE_VERSION} GOLANG_VERSION=${GOLANG_VERSION} sh /rh_linux_deps.sh
-ENV PATH /opt/rh/devtoolset-10/root/usr/bin:$PATH
+RUN yum -y update && \
+    yum -y install gcc-c++ cmake gcc-toolset-13 git && \
+    mkdir -p /usr/local && \
+    curl -s -L https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz | tar xz -C /usr/local && \
+    ln -s /usr/local/go/bin/go /usr/local/bin/go && \
+    ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt
 COPY --from=llm-code / /go/src/github.com/jmorganca/ollama/
-ARG OLLAMA_CUSTOM_CPU_DEFS
-ARG CGO_CFLAGS
 WORKDIR /go/src/github.com/jmorganca/ollama/llm/generate
 
 FROM --platform=linux/amd64 cpu-builder-amd64 AS cpu-build-amd64
@@ -38,13 +37,14 @@ ENV CGO_ENABLED 1
 WORKDIR /go/src/github.com/jmorganca/ollama
 COPY --from=repo /ollama/ .
 COPY --from=cpu_avx2-build-amd64 /go/src/github.com/jmorganca/ollama/llm/llama.cpp/build/linux/ llm/llama.cpp/build/linux/
-ARG GOFLAGS
-ARG CGO_CFLAGS
 RUN go build -trimpath .
 
 # Runtime stages
-FROM --platform=linux/amd64 ubuntu:22.04 as runtime-amd64
-RUN apt-get update && apt-get install -y ca-certificates
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9:latest as runtime-amd64
+RUN yum -y update && \
+    yum -y clean all --enablerepo='*' && \
+    rm -rf /var/cache/dnf && \
+    find /var/log -type f -name "*.log" -exec rm -f {} \;
 COPY --from=build-amd64 /go/src/github.com/jmorganca/ollama/ollama /bin/ollama
 
 FROM runtime-amd64
