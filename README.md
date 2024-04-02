@@ -11,6 +11,7 @@ The following **Inference Servers** for LLMs can be deployed standalone on OpenS
 - [vLLM](llm-servers/vllm/README.md): how to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
 - [Hugging Face TGI](llm-servers/hf_tgi/README.md): how to deploy the [Text Generation Inference](https://github.com/huggingface/text-generation-inference) server from Hugging Face.
 - [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): how to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
+- [Ollama](llm-servers/ollama/README.md): how to deploy [Ollama](https://github.com/ollama/ollama) using CPU only for inference.
 
 ### Serving Runtimes deployment
 

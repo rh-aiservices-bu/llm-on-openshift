@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ollama
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: ollama
+    spec:
+      containers:
+      - name: ollama
+        image: quay.io/rh-aiservices-bu/ollama-ubi9:0.1.30
+        imagePullPolicy: Always
+        env:
+        - name: MODEL_ID
+          value: mistral:latest
+        - name: OLLAMA_MODELS
+          value: /.ollama/models
+        - name: OLLAMA_HOST
+          value: 0.0.0.0
+        - name: OLLAMA_KEEP_ALIVE
+          value: '-1m'
+        securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+        ports:
+        - name: http
+          containerPort: 11434
+          protocol: TCP
+        resources:
+          limits:
+            cpu: '4'
+            memory: 8Gi
+          requests:
+            cpu: '4'
+            memory: 8Gi
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          timeoutSeconds: 5
+          periodSeconds: 30
+          successThreshold: 1
+          failureThreshold: 3
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+            scheme: HTTP
+          timeoutSeconds: 8
+          periodSeconds: 100
+          successThreshold: 1
+          failureThreshold: 3
+        lifecycle:
+            postStart:
+              exec:
+                command: [ "/bin/sh", "-c", "/bin/ollama pull $MODEL_ID" ]
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /.ollama
+          name: ollama-cache
+      restartPolicy: Always
+      volumes:
+      - name: ollama-cache
+        persistentVolumeClaim:
+          claimName: ollama-cache

@@ -2,17 +2,17 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: vllm-app
+  name: ollama-app
   labels:
     component: vllm
-    purpose: vllm-app
+    purpose: ollama-app
 spec:
   destination:
     namespace: default
     server: 'https://kubernetes.default.svc'
   project: default
   source:
-    path: llm-servers/vllm/gitops
+    path: llm-servers/ollama/gitops
     repoURL: >-
       https://github.com/rh-aiservices-bu/llm-on-openshift
     targetRevision: main
