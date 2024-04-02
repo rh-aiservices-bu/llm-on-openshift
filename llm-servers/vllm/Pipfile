@@ -9,24 +9,28 @@ verify_ssl = false
 name = "pytorch"
 
 [packages]
-accelerate = "~=0.25.0"
-aioprometheus = {extras = ["starlette"], version = "~=23.3.0"}
-fastapi = "~=0.105.0"
+vllm = "==0.4.0"
+cmake = "~=3.29.0.1"
 ninja = "~=1.11.1.1"
-numpy = "~=1.26.2"
-pandas = "~=2.1.4"
-psutil = "~=5.9.7"
-pyarrow = "~=14.0.1"
-pydantic = "~=2.6.1"
-ray = "~=2.9.2"
-sentencepiece = "~=0.1.99"
+psutil = "~=5.9.8"
+ray = "~=2.10.0"
+sentencepiece = "~=0.2.0"
+numpy = "~=1.26.4"
 torch = {version = "==2.1.2+cu121", index = "pytorch"}
-transformers = "~=4.39.1"
-uvicorn = {extras = ["standard"], version = "==0.24.0.post1"}
-vllm = "~=0.3.3"
+requests = "~=2.31.0"
+py-cpuinfo = "~=9.0.0"
+transformers = "~=4.39.2"
 xformers = "==0.0.23.post1"
+fastapi = "~=0.110.0"
+uvicorn = {extras = ["standard"], version = "~=0.29.0"}
+pydantic = "~=2.6.4"
+prometheus_client = "~=0.20.0"
 pynvml = "==11.5.0"
-cupy-cuda12x = "==12.1.0"
+triton = "==2.1.0"
+outlines = "==0.0.34"
+tiktoken = "==0.6.0"
+pip = "~=24.0"
+
 
 [dev-packages]
 
