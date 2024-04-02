@@ -1,0 +1,18 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: ollama
+spec:
+  clusterIP: None
+  ipFamilies:
+    - IPv4
+  ports:
+    - name: http
+      protocol: TCP
+      port: 11434
+      targetPort: http
+  type: ClusterIP
+  ipFamilyPolicy: SingleStack
+  sessionAffinity: None
+  selector:
+    app: ollama

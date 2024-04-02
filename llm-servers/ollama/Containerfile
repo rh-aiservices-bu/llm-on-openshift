@@ -1,0 +1,41 @@
+ARG GOLANG_VERSION=1.22.1
+ARG OLLAMA_VERSION=v0.1.30
+
+# Builder stage
+FROM --platform=linux/amd64 quay.io/centos/centos:stream9 AS cpu-builder-amd64
+ARG GOLANG_VERSION
+ARG OLLAMA_VERSION
+# Prepare builder
+WORKDIR /
+RUN yum -y update && \
+    # Install build dependencies
+    yum -y install gcc-c++ cmake gcc-toolset-13 git && \
+    mkdir -p /usr/local && \
+    curl -s -L https://dl.google.com/go/go${GOLANG_VERSION}.linux-amd64.tar.gz | tar xz -C /usr/local && \
+    ln -s /usr/local/go/bin/go /usr/local/bin/go && \
+    ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt && \
+    # Clone the Ollama repo
+    git clone https://github.com/ollama/ollama.git && \
+    cd ollama && \
+    git checkout tags/${OLLAMA_VERSION}
+# Build the Ollama binary
+WORKDIR /ollama/llm/generate
+RUN OLLAMA_CPU_TARGET="cpu_avx2" sh gen_linux.sh
+ENV CGO_ENABLED 1
+WORKDIR /ollama
+RUN go build -trimpath .
+
+# Runtime stage
+FROM --platform=linux/amd64 registry.access.redhat.com/ubi9:latest
+RUN yum -y update && \
+    yum -y clean all --enablerepo='*' && \
+    rm -rf /var/cache/dnf && \
+    find /var/log -type f -name "*.log" -exec rm -f {} \;
+COPY --from=cpu-builder-amd64 /ollama/ollama /bin/ollama
+
+EXPOSE 11434
+ENV OLLAMA_HOST 0.0.0.0
+ENV PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+ENTRYPOINT ["/bin/ollama"]
+CMD ["serve"]
