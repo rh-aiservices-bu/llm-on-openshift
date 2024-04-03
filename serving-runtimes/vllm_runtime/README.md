@@ -1,6 +1,6 @@
 # vLLM Runtime
 
-The [vLLM](https://docs.vllm.ai/en/latest/index.html) runtime can be used with Open Data Hub and OpenShift AI Single-Model Serving stack to serve Large Language Models (LLMs) as an alternative to Caikit+TGIS or standalone TGIS. Currently supported models are listed [here](https://docs.vllm.ai/en/latest/models/supported_models.html) (in the current version of vLLM, Microsoft's Phi-2 is broken).
+The [vLLM](https://docs.vllm.ai/en/latest/index.html) runtime can be used with Open Data Hub and OpenShift AI Single-Model Serving stack to serve Large Language Models (LLMs) as an alternative to Caikit+TGIS or standalone TGIS. Currently supported models are listed [here](https://docs.vllm.ai/en/latest/models/supported_models.html).
 
 Note that as this runtime is specifically meant to run LLMs and uses custom kernels based on CUDA, a **GPU is required** to load models.
 

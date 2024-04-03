@@ -4,28 +4,26 @@ labels:
   opendatahub.io/dashboard: "true"
 metadata:
   annotations:
-    openshift.io/display-name: vLLM
-  name: vllm
+    openshift.io/display-name: Ollama
+  name: ollama
 spec:
   builtInAdapter:
     modelLoadingTimeoutMillis: 90000
   containers:
-    - args:
-        - --model
-        - /mnt/models/
-        - --download-dir
-        - /models-cache
-        - --port
-        - "8080"
-        - --max-model-len
-        - "6144"
-      image: quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.0
+    - image: quay.io/rh-aiservices-bu/ollama-ubi9:0.1.30
+      env:
+        - name: OLLAMA_MODELS
+          value: /.ollama/models
+        - name: OLLAMA_HOST
+          value: 0.0.0.0
+        - name: OLLAMA_KEEP_ALIVE
+          value: '-1m'
       name: kserve-container
       ports:
-        - containerPort: 8080
+        - containerPort: 11434
           name: http1
           protocol: TCP
   multiModel: false
   supportedModelFormats:
     - autoSelect: true
-      name: pytorch
+      name: any

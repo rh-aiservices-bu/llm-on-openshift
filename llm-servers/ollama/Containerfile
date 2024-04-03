@@ -30,8 +30,13 @@ FROM --platform=linux/amd64 registry.access.redhat.com/ubi9:latest
 RUN yum -y update && \
     yum -y clean all --enablerepo='*' && \
     rm -rf /var/cache/dnf && \
-    find /var/log -type f -name "*.log" -exec rm -f {} \;
+    find /var/log -type f -name "*.log" -exec rm -f {} \; && \
+    mkdir -p /.ollama && \
+    chown -R 1001:0 /.ollama && \
+    chmod -R g=u /.ollama
 COPY --from=cpu-builder-amd64 /ollama/ollama /bin/ollama
+
+USER 1001
 
 EXPOSE 11434
 ENV OLLAMA_HOST 0.0.0.0
