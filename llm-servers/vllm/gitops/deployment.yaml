@@ -54,7 +54,8 @@ spec:
             "mistralai/Mistral-7B-Instruct-v0.2",
             "--download-dir",
             "/models-cache",
-            "--dtype", "float16" ]
+            "--dtype", "float16",
+            "--max-model-len", "6144" ]
           securityContext:
             capabilities:
               drop:
