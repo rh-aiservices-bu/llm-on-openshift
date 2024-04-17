@@ -84,7 +84,7 @@ spec:
             - name: shm
               mountPath: /dev/shm
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.0'
+          image: 'quay.io/rh-aiservices-bu/vllm-openai-ubi9:0.4.0.post1'
       volumes:
         - name: models-cache
           persistentVolumeClaim:
