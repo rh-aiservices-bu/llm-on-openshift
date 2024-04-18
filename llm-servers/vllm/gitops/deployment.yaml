@@ -48,7 +48,9 @@ spec:
             periodSeconds: 100
             successThreshold: 1
             failureThreshold: 3
-          env: []
+          env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              value: ''
           args: [
             "--model",
             "mistralai/Mistral-7B-Instruct-v0.2",
