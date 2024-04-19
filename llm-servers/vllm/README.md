@@ -12,47 +12,83 @@ A notebook example using Langchain is available [here](../../examples/notebooks/
 
 The default installation deploys the [Mistral-7B-Instruct-v0.2](https://huggingface.co/mistralai/Mistral-7B-Instruct-v0.2) model. Although on the smaller side of LLMs, it will still require a GPU to work properly in a fast enough manner. See [Advanced installation](#advanced-installation) for instructions on how to change the model as well as various settings.
 
-Automated Deployment:
+### Automated Deployment
 
 - Use the OpenShift GitOps/ArgoCD Application definition at `gitops/vllm-app.yaml`
 
-Manual Deployment (from the `gitops` folder):
+### Manual Deployment using Kustomize
+
+After logging in to OpenShift, run the following commands:
+
+```bash
+$ oc new-project vllm
+$ kustomize build https://github.com/rh-aiservices-bu/llm-on-openshift.git/llm-servers/vllm/gitops | oc apply -f -
+```
+
+You can also replace the github.com URL in the kustomize command with a local path instead, if this repository has been locally cloned.
+
+### Manual Deployment 
+
+Using the contents of the [gitops folder](gitops), perform the following steps:
 
 - Create PVC named `vllm-models-cache` with enough space to hold all the models you want to try.
 - Create the Deployment using the file [deployment.yaml](gitops/deployment.yaml).
 - Create the Service using file [service.yaml](gitops/service.yaml).
 - If you want to expose the server outside of your OpenShift cluster, create the Route with the file [route.yaml](gitops/route.yaml)
 
+## Post Installation Tasks
+
+As of April 18, 2024 some of the available models on Hugging Face are now gated - meaning that you will require a [user access token](https://huggingface.co/docs/hub/security-tokens) in order for these to be downloaded at pod startup. Perform these steps to implement this:
+
+- Sign up for an account at [huggingface.co](https://huggingface.co), and login
+- Navigate to your user profile, settings, Access Tokens
+- Create a new access token, and copy the details
+- In OpenShift web console, navigate to the deployment, vllm, environment variables
+- Add your token value to the `HUGGING_FACE_HUB_TOKEN` environment variable.
+- Restart the deployment to roll out an updated pod.
+
+
+
 The API is now accessible at the endpoints:
 
 - defined by your Service, accessible internally on port **8000** using http. E.g. `http://vllm.your-project.svc.cluster.local:8000/`
 - defined by your Route, accessible externally through https, e.g. `https://vllm.your-project.your-cluster/`
 
+vLLM also includes an OpenAPI web interface that can be access from a browser by adding `docs` to the path, e.g.  `https://vllm.your-project.your-cluster/docs`
+
 ## Usage
 
-You can directly query the model using either the /v1/completions or /v1/completions endpoints:
+You can directly query the model using the [OpenAI API protocol](https://platform.openai.com/docs/api-reference/). The server currently hosts one model at a time, and currently implements [list models](https://platform.openai.com/docs/api-reference/models/list), [create chat completion](https://platform.openai.com/docs/api-reference/chat/completions/create), and [create completion](https://platform.openai.com/docs/api-reference/completions/create) endpoints.
 
+Example of calling the /v1/models endpoint to list the available models:
+```bash
+curl http://service:8000//v1/models \
+  -H 'accept: application/json'
+```
+
+Example of calling the /v1/completions endpoint to complete a sentence:
 ```bash
 curl http://service:8000/v1/completions \
       -H "Content-Type: application/json" \
       -d '{
-          "model": "Mistral-7B-Instruct-v0.2",
+          "model": "mistralai/Mistral-7B-Instruct-v0.2",
           "prompt": "San Francisco is a",
           "max_tokens": 7,
           "temperature": 0
       }'
 ```
 
+Example of calling the /v1/chat/completions endpoint demonstrating a conversation:
 ```bash
 curl http://service:8000/v1/chat/completions \
       -H "Content-Type: application/json" \
       -d '{
-          "model": "Mistral-7B-Instruct-v0.2",
-          "messages": [
-          {"role": "system", "content": "You are a helpful assistant."},
-          {"role": "user", "content": "Who won the world series in 2020?"}
-          ]
-      }'
+            "model": "mistralai/Mistral-7B-Instruct-v0.2",
+            "messages": [
+              {"role": "user", "content": "Who won the world series in 2020?"},
+              {"role": "assistant", "content": "You are a helpful assistant."}
+            ]
+          }'
 ```
 
 or from Python:
