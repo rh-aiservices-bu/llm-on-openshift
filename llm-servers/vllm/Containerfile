@@ -1,9 +1,10 @@
-FROM registry.access.redhat.com/ubi9/python-311
+FROM registry.access.redhat.com/ubi9/python-311 as cuda-runtime
 
 ###################################################################################################
 # CUDA 12.1 Layer, from https://gitlab.com/nvidia/container-images/cuda/-/blob/master/dist/12.1.1 #
 ###################################################################################################
 
+# Base
 USER 0
 
 ENV NVARCH x86_64
@@ -40,6 +41,36 @@ COPY NGC-DL-CONTAINER-LICENSE /
 ENV NVIDIA_VISIBLE_DEVICES all
 ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
 
+# Runtime
+ENV NV_CUDA_LIB_VERSION 12.1.1-1
+
+ENV NV_NVTX_VERSION 12.1.105-1
+ENV NV_LIBNPP_VERSION 12.1.0.40-1
+ENV NV_LIBNPP_PACKAGE libnpp-12-1-${NV_LIBNPP_VERSION}
+ENV NV_LIBCUBLAS_VERSION 12.1.3.1-1
+ENV NV_LIBNCCL_PACKAGE_NAME libnccl
+ENV NV_LIBNCCL_PACKAGE_VERSION 2.17.1-1
+ENV NV_LIBNCCL_VERSION 2.17.1
+ENV NCCL_VERSION 2.17.1
+ENV NV_LIBNCCL_PACKAGE ${NV_LIBNCCL_PACKAGE_NAME}-${NV_LIBNCCL_PACKAGE_VERSION}+cuda12.1
+
+RUN yum install -y \
+    cuda-libraries-12-1-${NV_CUDA_LIB_VERSION} \
+    cuda-nvtx-12-1-${NV_NVTX_VERSION} \
+    ${NV_LIBNPP_PACKAGE} \
+    libcublas-12-1-${NV_LIBCUBLAS_VERSION} \
+    ${NV_LIBNCCL_PACKAGE} \
+    && yum clean all \
+    && rm -rf /var/cache/yum/*
+
+# Set this flag so that libraries can find the location of CUDA
+ENV XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda
+
+# CUDA Devel image
+FROM cuda-runtime as cuda-devel
+ENV NVIDIA_VISIBLE_DEVICES all
+ENV NVIDIA_DRIVER_CAPABILITIES compute,utility
+
 ENV NV_CUDA_LIB_VERSION 12.1.1-1
 ENV NV_NVPROF_VERSION 12.1.105-1
 ENV NV_NVPROF_DEV_PACKAGE cuda-nvprof-12-1-${NV_NVPROF_VERSION}
@@ -48,14 +79,13 @@ ENV NV_NVML_DEV_VERSION 12.1.105-1
 ENV NV_LIBCUBLAS_DEV_VERSION 12.1.3.1-1
 ENV NV_LIBNPP_DEV_VERSION 12.1.0.40-1
 ENV NV_LIBNPP_DEV_PACKAGE libnpp-devel-12-1-${NV_LIBNPP_DEV_VERSION}
-ENV NV_LIBNCCL_PACKAGE_NAME libnccl
-ENV NV_LIBNCCL_PACKAGE_VERSION 2.17.1-1
-ENV NV_LIBNCCL_PACKAGE ${NV_LIBNCCL_PACKAGE_NAME}-${NV_LIBNCCL_PACKAGE_VERSION}+cuda12.1
 ENV NV_LIBNCCL_DEV_PACKAGE_NAME libnccl-devel
 ENV NV_LIBNCCL_DEV_PACKAGE_VERSION 2.17.1-1
+ENV NCCL_VERSION 2.17.1
 ENV NV_LIBNCCL_DEV_PACKAGE ${NV_LIBNCCL_DEV_PACKAGE_NAME}-${NV_LIBNCCL_DEV_PACKAGE_VERSION}+cuda12.1
 ENV NV_CUDA_NSIGHT_COMPUTE_VERSION 12.1.1-1
 ENV NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE cuda-nsight-compute-12-1-${NV_CUDA_NSIGHT_COMPUTE_VERSION}
+
 
 RUN yum install -y \
     make \
@@ -68,7 +98,6 @@ RUN yum install -y \
     cuda-nvml-devel-12-1-${NV_NVML_DEV_VERSION} \
     libcublas-devel-12-1-${NV_LIBCUBLAS_DEV_VERSION} \
     ${NV_LIBNPP_DEV_PACKAGE} \
-    ${NV_LIBNCCL_PACKAGE} \
     ${NV_LIBNCCL_DEV_PACKAGE} \
     ${NV_CUDA_NSIGHT_COMPUTE_DEV_PACKAGE} \
     && yum clean all \
@@ -76,28 +105,15 @@ RUN yum install -y \
 
 ENV LIBRARY_PATH /usr/local/cuda/lib64/stubs
 
-# Set this flag so that libraries can find the location of CUDA
-ENV XLA_FLAGS=--xla_gpu_cuda_data_dir=/usr/local/cuda
-
-# CuDNN
-ENV NV_CUDNN_VERSION 8.9.0.131-1
-ENV NV_CUDNN_PACKAGE libcudnn8-${NV_CUDNN_VERSION}.cuda12.1
-ENV NV_CUDNN_PACKAGE_DEV libcudnn8-devel-${NV_CUDNN_VERSION}.cuda12.1
-
-RUN yum install -y \
-    ${NV_CUDNN_PACKAGE} \
-    ${NV_CUDNN_PACKAGE_DEV} \
-    && yum clean all \
-    && rm -rf /var/cache/yum/*
-
-
 #############################################
 # End of CUDA 12.1 Layer                    #
 #############################################
 
-##############
-# vLLM Layer #
-##############
+###################################
+# vLLM install in build container #
+###################################
+
+FROM cuda-devel as vllm-install
 
 WORKDIR /opt/app-root/src
 
@@ -107,10 +123,29 @@ COPY --chown=1001:0 requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt && \
     rm -f requirements.txt && \
-    pip install flash-attn --no-build-isolation && \
+    # Install flash-attn from PyPI \
+    pip install flash-attn==2.5.8 --no-build-isolation && \
+    # Correction for FIPS mode \
+    sed -i s/md5/sha1/g /opt/app-root/lib64/python3.11/site-packages/triton/runtime/jit.py && \
     # Fix permissions to support pip in Openshift environments \
     chmod -R g+w /opt/app-root/lib/python3.11/site-packages && \
     fix-permissions /opt/app-root -P
+
+##################
+# vLLM container #
+##################
+
+FROM cuda-runtime as vllm-container
+
+WORKDIR /opt/app-root/src
+
+COPY --from=vllm-install --chown=1001:0 /opt/app-root/lib64/python3.11/site-packages /opt/app-root/lib64/python3.11/site-packages
+COPY --from=vllm-install --chown=1001:0 /opt/app-root/src/.config/vllm/nccl/cu12/libnccl.so.2* /usr/local/lib/libnccl.so.2
+
+# Fix VLLM_NCCL_SO_PATH
+ENV VLLM_NCCL_SO_PATH=/usr/local/lib/libnccl.so.2
+
+USER 1001
 
 EXPOSE 8000
 
