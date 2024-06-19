@@ -1,0 +1,20 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu121/"
+verify_ssl = false
+name = "pytorch"
+
+[packages]
+fastapi = "~=0.111.0"
+pip = "~=24.0"
+sentence-transformers = "~=3.0.1"
+torch = {version = "==2.3.0+cu121", index = "pytorch"}
+transformers = "~=4.41.2"
+wheel = "~=0.43.0"
+
+[requires]
+python_version = "3.12"
