@@ -12,6 +12,7 @@ The following **Inference Servers** for LLMs can be deployed standalone on OpenS
 - [Hugging Face TGI](llm-servers/hf_tgi/README.md): how to deploy the [Text Generation Inference](https://github.com/huggingface/text-generation-inference) server from Hugging Face.
 - [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): how to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
 - [Ollama](llm-servers/ollama/README.md): how to deploy [Ollama](https://github.com/ollama/ollama) using CPU only for inference.
+- [SBERT](llm-servers/sbert/README.md): runtime to serve [Sentence Transformers](https://huggingface.co/sentence-transformers) models.
 
 ### Serving Runtimes deployment
 
@@ -19,6 +20,8 @@ The following **Runtimes** can be imported in the Single-Model Serving stack of 
 
 - [vLLM Serving Runtime](serving-runtimes/vllm_runtime/README.md)
 - [Hugging Face Text Generation Inference](serving-runtimes/hf_tgi_runtime/README.md)
+- [SBERT](serving-runtimes/sbert_runtime/README.md)
+- [Ollama](serving-runtimes/ollama_runtime/ollama-runtime.yaml)
 
 ### Vector Databases
 
