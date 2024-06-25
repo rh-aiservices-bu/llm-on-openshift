@@ -10,7 +10,7 @@ spec:
   builtInAdapter:
     modelLoadingTimeoutMillis: 90000
   containers:
-    - image: quay.io/rh-aiservices-bu/ollama-ubi9:0.1.30
+    - image: quay.io/rh-aiservices-bu/ollama-ubi9:0.1.45
       env:
         - name: OLLAMA_MODELS
           value: /.ollama/models
