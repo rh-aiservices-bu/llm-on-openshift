@@ -1,5 +1,5 @@
 ARG GOLANG_VERSION=1.22.1
-ARG OLLAMA_VERSION=v0.1.30
+ARG OLLAMA_VERSION=v0.1.45
 
 # Builder stage
 FROM --platform=linux/amd64 quay.io/centos/centos:stream9 AS cpu-builder-amd64
