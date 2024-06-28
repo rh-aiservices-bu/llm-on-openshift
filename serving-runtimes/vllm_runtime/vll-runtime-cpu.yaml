@@ -1,0 +1,31 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+labels:
+  opendatahub.io/dashboard: "true"
+metadata:
+  annotations:
+    openshift.io/display-name: vLLM
+  name: vllm
+spec:
+  builtInAdapter:
+    modelLoadingTimeoutMillis: 90000
+  containers:
+    - args:
+        - --model
+        - /mnt/models/
+        - --download-dir
+        - /models-cache
+        - --port
+        - "8080"
+        - --max-model-len
+        - "2048"
+      image: quay.io/rh-aiservices-bu/vllm-cpu-openai-ubi9:0.2
+      name: kserve-container
+      ports:
+        - containerPort: 8080
+          name: http1
+          protocol: TCP
+  multiModel: false
+  supportedModelFormats:
+    - autoSelect: true
+      name: pytorch

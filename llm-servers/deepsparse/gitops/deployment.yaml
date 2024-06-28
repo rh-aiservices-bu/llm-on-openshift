@@ -1,0 +1,73 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: deepsparse-text-generation
+  labels:
+    app: deepsparse-text-generation
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deepsparse-text-generation
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: deepsparse-text-generation
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      affinity: {}
+      terminationGracePeriodSeconds: 120
+      securityContext: {}
+      containers:
+        - resources:
+            limits:
+              cpu: '2'
+              memory: 8Gi
+            requests:
+              cpu: '1'
+              memory: 4Gi
+          terminationMessagePath: /dev/termination-log
+          name: server
+          env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              value: ''
+          args: [
+            "--integration", "openai",
+            "--port", "8080",
+            "--task", "text_generation",
+            "--model_path", "hf:nm-testing/granite-7b-lab-pruned50-quant-ds"]
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: shm
+              mountPath: /dev/shm
+            - name: models-cache
+              mountPath: /opt/app-root/src/.cache
+          terminationMessagePolicy: File
+          image: 'quay.io/rh-aiservices-bu/deepsparse-openai-ubi9:0.2'
+      volumes:
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+        - name: models-cache
+          persistentVolumeClaim:
+            claimName: models-volume
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600

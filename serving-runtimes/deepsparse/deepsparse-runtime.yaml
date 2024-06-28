@@ -1,0 +1,29 @@
+apiVersion: serving.kserve.io/v1alpha1
+kind: ServingRuntime
+labels:
+  opendatahub.io/dashboard: "true"
+metadata:
+  annotations:
+    openshift.io/display-name: DeepSparse Runtime
+  name: deepsparse-runtime
+spec:
+  volumes:
+    - name: models-volume
+      emptyDir: {}
+  containers:
+    - command: ["/bin/sh", "-c"]
+      args:
+        - cp -r /mnt/models/* /mnt/models-aux && deepsparse.server --integration openai --port 8080 --task text_generation --model_path /mnt/models-aux
+      image: quay.io/rh-aiservices-bu/deepsparse-openai-ubi9:0.2
+      name: kserve-container
+      ports:
+        - containerPort: 8080
+          protocol: TCP
+      volumeMounts:
+        - name: models-volume
+          readOnly: false
+          mountPath: /mnt/models-aux
+  multiModel: false
+  supportedModelFormats:
+    - autoSelect: true
+      name: onnx
