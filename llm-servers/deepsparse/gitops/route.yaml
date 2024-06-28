@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: deepsparse-text-generation
+  labels:
+    app: deepsparse-text-generation
+spec:
+  to:
+    kind: Service
+    name: deepsparse-text-generation
+    weight: 100
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+  wildcardPolicy: None

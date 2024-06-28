@@ -12,7 +12,7 @@ spec:
     server: 'https://kubernetes.default.svc'
   project: default
   source:
-    path: llm-servers/vllm/gitops
+    path: llm-servers/vllm/gpu/gitops
     repoURL: >-
       https://github.com/rh-aiservices-bu/llm-on-openshift
     targetRevision: main

@@ -1,0 +1,2 @@
+deepsparse-nightly[llm,server,onnxruntime]==1.8.0.20240404
+openai==1.16.2
