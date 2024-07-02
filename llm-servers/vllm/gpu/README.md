@@ -22,7 +22,7 @@ After logging in to OpenShift, run the following commands:
 
 ```bash
 $ oc new-project vllm
-$ kustomize build https://github.com/rh-aiservices-bu/llm-on-openshift.git/llm-servers/vllm/gitops | oc apply -f -
+$ kustomize build https://github.com/rh-aiservices-bu/llm-on-openshift.git/llm-servers/vllm/gpu/gitops | oc apply -f -
 ```
 
 You can also replace the github.com URL in the kustomize command with a local path instead, if this repository has been locally cloned.
