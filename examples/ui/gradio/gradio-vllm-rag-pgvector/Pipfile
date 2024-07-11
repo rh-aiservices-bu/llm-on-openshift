@@ -1,0 +1,29 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[[source]]
+url = "https://download.pytorch.org/whl/cu118/"
+verify_ssl = false
+name = "pytorch"
+
+[requires]
+python_version = "3.11"
+
+[packages]
+# PyTorch packages
+torch = {version = "==2.0.1+cu118", file = "https://download.pytorch.org/whl/cu118/torch-2.0.1%2Bcu118-cp311-cp311-linux_x86_64.whl#sha256=143b6c658c17d43376e2dfbaa2c106d35639d615e5e8dec4429cf1e510dd8d61"}
+torchvision = {version = "==0.15.2+cu118", file = "https://download.pytorch.org/whl/cu118/torchvision-0.15.2%2Bcu118-cp311-cp311-linux_x86_64.whl#sha256=def9af47ebc2cad55c5aa2dad1230dcf4261833ed6df8a73e839bc233764f09e"}
+einops = "~=0.7.0"
+gradio = "~=3.46.1"
+langchain = "~=0.1.9"
+langchain_community = "~=0.0.38"
+psycopg = "~=3.1.10"
+pgvector = "~=0.2.3"
+openai = "~=1.13.3"
+text-generation = "~=0.6.1"
+sentence-transformers = "~=2.4.0"
+python-dotenv = "*"
+
+[dev-packages]
