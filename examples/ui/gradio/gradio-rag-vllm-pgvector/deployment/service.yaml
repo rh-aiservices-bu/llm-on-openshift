@@ -1,9 +1,9 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: gradio-vllm-rag-pgvector
+  name: gradio-rag-vllm-pgvector
   labels:
-    app: gradio-vllm-rag-pgvector
+    app: gradio-rag-vllm-pgvector
 spec:
   clusterIP: None
   ipFamilies:
@@ -17,4 +17,4 @@ spec:
   ipFamilyPolicy: SingleStack
   sessionAffinity: None
   selector:
-    app: gradio-vllm-rag-pgvector
+    app: gradio-rag-vllm-pgvector

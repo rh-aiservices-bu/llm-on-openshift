@@ -1,13 +1,13 @@
 kind: Route
 apiVersion: route.openshift.io/v1
 metadata:
-  name: gradio-vllm-rag-pgvector
+  name: gradio-rag-vllm-pgvector
   labels:
-    app: gradio-vllm-rag-pgvector
+    app: gradio-rag-vllm-pgvector
 spec:
   to:
     kind: Service
-    name: gradio-vllm-rag-pgvector
+    name: gradio-rag-vllm-pgvector
     weight: 100
   port:
     targetPort: http

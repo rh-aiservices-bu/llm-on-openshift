@@ -32,12 +32,9 @@ The different parameters you can/must pass as environment variables in the deplo
 - MODEL_NAME - mandatory, default: mistralai/Mistral-7B-Instruct-v0.2
 - MAX_TOKENS - mandatory, default: 1024
 - PRESENCE_PENALTY, default: 1.03
-- MAX_NEW_TOKENS - optional, default: 512
 - TOP_K - optional, default: 10
 - TOP_P - optional, default: 0.95
 - TYPICAL_P - optional, default: 0.95
 - TEMPERATURE - optional, default: 0.01
-- REPETITION_PENALTY - optional, default: 1.03
-
 
 The deployment replicas is set to 0 initially to let you properly fill in those parameters. Don't forget to scale it up if you want see something 😉!
