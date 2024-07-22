@@ -29,10 +29,10 @@ async def process_strings(input_array: StringArray):
         raise HTTPException(status_code=500, detail=str(e))
 
 parser = argparse.ArgumentParser(description='Load a Sentence Transformer model.')
-parser.add_argument('--model_path', type=str, required=False, default='/mnt/models', help='Path to the Sentence Transformer model')
+parser.add_argument('--model_path', type=str, required=False, default='/mnt/models', help='Path to the Sentence Transformer model', trust_remote_code=False)
 args = parser.parse_args()
 
-model = SentenceTransformer(args.model_path, trust_remote_code=True)
+model = SentenceTransformer(args.model_path, args.trust_remote_code)
 
 # Launch the FastAPI server
 if __name__ == "__main__":
