@@ -32,7 +32,7 @@ parser = argparse.ArgumentParser(description='Load a Sentence Transformer model.
 parser.add_argument('--model_path', type=str, required=False, default='/mnt/models', help='Path to the Sentence Transformer model')
 args = parser.parse_args()
 
-model = SentenceTransformer(args.model_path)
+model = SentenceTransformer(args.model_path, trust_remote_code=True)
 
 # Launch the FastAPI server
 if __name__ == "__main__":
