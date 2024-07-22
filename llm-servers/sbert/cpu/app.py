@@ -30,9 +30,10 @@ async def process_strings(input_array: StringArray):
 
 parser = argparse.ArgumentParser(description='Load a Sentence Transformer model.')
 parser.add_argument('--model_path', type=str, required=False, default='/mnt/models', help='Path to the Sentence Transformer model')
+parser.add_argument('--trust_remote_code', type=bool, required=False, default=False, help='Trust remote code (default: False)')
 args = parser.parse_args()
 
-model = SentenceTransformer(args.model_path)
+model = SentenceTransformer(args.model_path, trust_remote_code=args.trust_remote_code)
 
 # Launch the FastAPI server
 if __name__ == "__main__":
