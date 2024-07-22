@@ -10,7 +10,7 @@ spec:
   builtInAdapter:
     modelLoadingTimeoutMillis: 90000
   containers:
-    - image: quay.io/rh-aiservices-bu/sbert-runtime:1.0.0
+    - image: quay.io/rh-aiservices-bu/sbert-runtime:1.0.1
       name: kserve-container
       ports:
         - containerPort: 8080

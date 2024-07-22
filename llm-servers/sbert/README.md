@@ -4,8 +4,8 @@ This custom runtime can be used to serve [Sentence-Transformers](https://hugging
 
 The runtime uses a UBI9 image defined in `Containerfile` (two flavours are available, with or without GPU support, in their respective folders). Images are accessible at:
 
-- GPU-enabled image: `quay.io/rh-aiservices-bu/sbert-runtime:1.0.0` (check for the latest version available).
-- CPU-only image: `quay.io/rh-aiservices-bu/sbert-runtime-cpu:1.0.0` (check for the latest version available).
+- GPU-enabled image: `quay.io/rh-aiservices-bu/sbert-runtime:1.0.1` (check for the latest version available).
+- CPU-only image: `quay.io/rh-aiservices-bu/sbert-runtime-cpu:1.0.1` (check for the latest version available).
 
 Note: the GPU image will also work without GPU, it's just bigger for nothing...
 
