@@ -9,6 +9,7 @@ verify_ssl = false
 name = "pytorch"
 
 [packages]
+einops = "~=0.8.0"
 fastapi = "~=0.111.0"
 pip = "~=24.0"
 sentence-transformers = "~=3.0.1"
