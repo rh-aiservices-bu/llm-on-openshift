@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: ollama
-        image: quay.io/rh-aiservices-bu/ollama-ubi9:0.1.45
+        image: quay.io/rh-aiservices-bu/ollama-ubi9:0.2.8
         imagePullPolicy: Always
         env:
         - name: MODEL_ID
