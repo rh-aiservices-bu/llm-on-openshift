@@ -94,7 +94,7 @@ spec:
             successThreshold: 1
             failureThreshold: 24
           terminationMessagePolicy: File
-          image: 'quay.io/rh-aiservices-bu/gradio-rag-vllm-pgvector:latest'
+          image: 'quay.io/rh-aiservices-bu/gradio-rag-vllm-pgvector:0.0.1'
       dnsPolicy: ClusterFirst
   strategy:
     type: RollingUpdate
