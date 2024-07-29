@@ -14,7 +14,7 @@ Once the stack is installed, adding the runtime is pretty straightforward:
 - Click on `Add serving runtime`.
 - For the type of model serving platforms this runtime supports, select `Single model serving platform`.
 - Upload the file `deepsparse-runtime.yaml` from the current folder, or click `Start from scratch` and copy/paste its content.
-- Create a PVC in your project called **models-volume** (yaml [here](../../llm-servers/deepsparse/pvc.yaml)), this will be used in the serving runtime because DeepSparse serving overwrites the existing model to create one with correct input sizes, and therefore needs write access to the storage.
+- Create a PVC in your project called **models-volume** (yaml [here](../../llm-servers/deepsparse/gitops/pvc.yaml)), this will be used in the serving runtime because DeepSparse serving overwrites the existing model to create one with correct input sizes, and therefore needs write access to the storage.
 
 The runtime is now available when deploying a model.
 
