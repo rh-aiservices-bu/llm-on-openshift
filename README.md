@@ -8,7 +8,7 @@ In this repo you will find resources, demos, recipes... to work with LLMs on Ope
 
 The following **Inference Servers** for LLMs can be deployed standalone on OpenShift:
 
-- [vLLM](llm-servers/vllm/README.md): how to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
+- [vLLM](llm-servers/vllm/gpu/README.md): how to deploy [vLLM](https://docs.vllm.ai/en/latest/index.html), the "Easy, fast, and cheap LLM serving for everyone".
 - [Hugging Face TGI](llm-servers/hf_tgi/README.md): how to deploy the [Text Generation Inference](https://github.com/huggingface/text-generation-inference) server from Hugging Face.
 - [Caikit-TGIS-Serving](https://github.com/opendatahub-io/caikit-tgis-serving) (external): how to deploy the Caikit-TGIS-Serving stack, from OpenDataHub.
 - [Ollama](llm-servers/ollama/README.md): how to deploy [Ollama](https://github.com/ollama/ollama) using CPU only for inference.
@@ -37,3 +37,7 @@ The following **Databases** can be used as a Vector Store for Retrieval Augmente
 - [Langchain examples](examples/notebooks/langchain/README.md): Various notebooks demonstrating how to work with [Langchain](https://www.langchain.com/). Examples are provided for different types of LLM servers (standalone or using the Single-Model Serving stack of Open Data Hub or OpenShift AI) and different vector databases.
 - [Langflow examples](examples/langflow/README.md): Various examples demonstrating how to work with Langflow.
 - [UI examples](examples/ui/README.md): Various examples on how to create and deploy a UI to interact with your LLM.
+
+### LLM clients
+
+- [AnythingLLM](llm-clients/anythingllm/Readme.md): Anything LLM is the "All-in-one AI application. Any LLM, any document, any agent, fully private". It is implemented here as a RHOAI custom workbench that can be easily connected to your LLM as well as other resources.

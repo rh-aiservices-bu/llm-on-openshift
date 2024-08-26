@@ -1,0 +1,14 @@
+--- /app/collector/index.js	2024-09-07 15:07:59.891076696 -0400
++++ /app/collector/index.js	2024-09-07 15:07:39.019191502 -0400
+@@ -135,9 +135,9 @@
+ });
+ 
+ app
+-  .listen(8888, async () => {
++  .listen(8889, async () => {
+     await wipeCollectorStorage();
+-    console.log(`Document processor app listening on port 8888`);
++    console.log(`Document processor app listening on port 8889`);
+   })
+   .on("error", function (_) {
+     process.once("SIGUSR2", function () {
