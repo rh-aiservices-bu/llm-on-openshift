@@ -12,7 +12,7 @@ The default installation deploys the [Mistral-7B-Instruct-v0.2](https://huggingf
 
 Automated Deployment:
 
-- Use the OpenShift GitOps/ArgoCD Application definition at `gitops/vllm-app.yaml`
+- Use the OpenShift GitOps/ArgoCD Application definition at `gitops/ollama-app.yaml`
 
 Manual Deployment (from the `gitops` folder):
 
