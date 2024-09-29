@@ -1,0 +1,78 @@
+###############
+# upload large files
+###############
+sendfile on;
+client_max_body_size 20M;
+client_body_buffer_size 20M;
+
+###############
+# api calls from probes get to CGI processing
+###############
+location = /api {
+  #index probe.cgi;
+  #fastcgi_index probe.cgi;
+  gzip off;
+  access_log  off;
+  root /opt/app-root;
+  fastcgi_pass  unix:/var/run/fcgiwrap.socket;
+  include /etc/nginx/fastcgi_params;
+  fastcgi_param SCRIPT_FILENAME  /opt/app-root/api/probe.cgi;
+}
+
+###############
+# api calls from culler get to CGI processing
+###############
+location = /api/kernels {
+    return 302 $custom_scheme://$http_host/api/kernels/;
+    access_log  off;
+}
+
+location /api/kernels/ {
+  #index access.cgi;
+  #fastcgi_index access.cgi;
+  gzip  off;
+  access_log    off;
+  root  /opt/app-root;
+  fastcgi_pass  unix:/var/run/fcgiwrap.socket;
+  include /etc/nginx/fastcgi_params;
+  fastcgi_param SCRIPT_FILENAME  /opt/app-root/api/kernels/access.cgi;
+}
+###############
+
+###############
+# AnythingLLM calls
+###############
+location /api/ {
+    # Standard anythingllm/NGINX configuration
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 20d;
+
+    # Needed to make it work properly
+    proxy_set_header X-anythingllm-Request $custom_scheme://$http_host$request_uri;
+    proxy_set_header X-anythingllm-Root-Path /;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $custom_scheme;
+
+    access_log /var/log/nginx/anythingllm.access.log json if=$loggable;
+}
+
+location / {
+    # Standard anythingllm/NGINX configuration
+    proxy_pass http://127.0.0.1:3001;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade $http_upgrade;
+    proxy_set_header Connection $connection_upgrade;
+    proxy_read_timeout 20d;
+
+    # Needed to make it work properly
+    proxy_set_header X-anythingllm-Request $custom_scheme://$http_host$request_uri;
+    proxy_set_header X-anythingllm-Root-Path /;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-Proto $custom_scheme;
+
+    access_log /var/log/nginx/anythingllm.access.log json if=$loggable;
+}
+###############

@@ -1,0 +1,174 @@
+FROM docker.io/mintplexlabs/anythingllm:1.2.2 as anythingllm
+
+FROM quay.io/sclorg/s2i-core-c9s:c9s
+
+LABEL name="anytingllm-workbench" \
+    summary="AnythingLLM workbench" \
+    description="AnythingLLM workbench"
+
+######################################
+# Update and Deploy OS Packages      #
+######################################
+
+USER 0
+
+WORKDIR /opt/app-root/bin/
+
+COPY --chown=1001:0 os-packages.txt ./
+
+RUN yum -y update && \
+    yum install -y yum-utils && \
+    yum-config-manager --enable crb && \
+    yum install -y https://download.fedoraproject.org/pub/epel/epel-release-latest-9.noarch.rpm && \
+    yum install -y $(cat os-packages.txt) && \
+    rm -f ./os-packages.txt && \
+    yum -y clean all --enablerepo='*' && \
+    rm -rf /var/cache/dnf && \
+    find /var/log -type f -name "*.log" -exec rm -f {} \;
+
+######################################################################################################
+# Install Node.js, from https://github.com/sclorg/s2i-nodejs-container/blob/master/18/Dockerfile.c9s #
+######################################################################################################
+
+EXPOSE 8080
+
+ENV NODEJS_VERSION=18 \
+    NPM_RUN=start \
+    NAME=nodejs \
+    NPM_CONFIG_PREFIX=$HOME/.npm-global \
+    PATH=$HOME/node_modules/.bin/:$HOME/.npm-global/bin/:$PATH \
+    CNB_STACK_ID=com.redhat.stacks.c9s-nodejs-18 \
+    CNB_USER_ID=1001 \
+    CNB_GROUP_ID=0
+
+# Package libatomic_ops was removed
+RUN yum -y module enable nodejs:$NODEJS_VERSION && \
+    MODULE_DEPS="make gcc gcc-c++ git openssl-devel" && \
+    INSTALL_PKGS="$MODULE_DEPS nodejs npm nodejs-nodemon nss_wrapper-libs which" && \
+    ln -s /usr/lib/node_modules/nodemon/bin/nodemon.js /usr/bin/nodemon && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    node -v | grep -qe "^v$NODEJS_VERSION\." && echo "Found VERSION $NODEJS_VERSION" && \
+    yum -y clean all --enablerepo='*'
+
+# Copy the S2I scripts from the specific language image to $STI_SCRIPTS_PATH
+COPY ./s2i/bin/ $STI_SCRIPTS_PATH
+
+# Copy extra files to the image.
+COPY ./root/ /
+
+# Drop the root user and make the content of /opt/app-root owned by user 1001
+RUN chown -R 1001:0 ${APP_ROOT} && chmod -R ug+rwx ${APP_ROOT} && \
+    rpm-file-permissions
+
+###################################################
+# Install Chrome for Puppeteer (for web scraping) #
+###################################################
+
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm && \
+    yum -y install google-chrome-stable_current_x86_64.rpm && \
+    rm -f  google-chrome-stable_current_x86_64.rpm && \
+    yum -y clean all --enablerepo='*' && \
+    rm -rf /var/cache/dnf && \
+    find /var/log -type f -name "*.log" -exec rm -f {} \;
+
+
+############################################################
+# Install NGINX to proxy AnythingLLM and pass probes check #
+############################################################
+
+ENV NGINX_VERSION=1.24 \
+    NGINX_SHORT_VER=124 \
+    NGINX_CONFIGURATION_PATH=${APP_ROOT}/etc/nginx.d \
+    NGINX_CONF_PATH=/etc/nginx/nginx.conf \
+    NGINX_DEFAULT_CONF_PATH=${APP_ROOT}/etc/nginx.default.d \
+    NGINX_CONTAINER_SCRIPTS_PATH=/usr/share/container-scripts/nginx \
+    NGINX_APP_ROOT=${APP_ROOT} \
+    NGINX_LOG_PATH=/var/log/nginx \
+    NGINX_PERL_MODULE_PATH=${APP_ROOT}/etc/perl
+
+# Modules does not exist
+RUN yum -y module enable nginx:$NGINX_VERSION && \
+    INSTALL_PKGS="nss_wrapper bind-utils gettext hostname nginx nginx-mod-stream nginx-mod-http-perl fcgiwrap initscripts chkconfig supervisor" && \
+    yum install -y --setopt=tsflags=nodocs $INSTALL_PKGS && \
+    rpm -V $INSTALL_PKGS && \
+    nginx -v 2>&1 | grep -qe "nginx/$NGINX_VERSION\." && echo "Found VERSION $NGINX_VERSION" && \
+    yum -y clean all --enablerepo='*'
+
+COPY --chown=1001:0 supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Copy extra files to the image.
+COPY --chown=1001:0 nginx/root/ /
+
+# Changing ownership and user rights to support following use-cases:
+# 1) running container on OpenShift, whose default security model
+#    is to run the container under random UID, but GID=0
+# 2) for working root-less container with UID=1001, which does not have
+#    to have GID=0
+# 3) for default use-case, that is running container directly on operating system,
+#    with default UID and GID (1001:0)
+# Supported combinations of UID:GID are thus following:
+# UID=1001 && GID=0
+# UID=<any>&& GID=0
+# UID=1001 && GID=<any>
+RUN sed -i -f ${NGINX_APP_ROOT}/nginxconf.sed ${NGINX_CONF_PATH} && \
+    mkdir -p ${NGINX_APP_ROOT}/etc/nginx.d/ && \
+    mkdir -p ${NGINX_APP_ROOT}/etc/nginx.default.d/ && \
+    mkdir -p ${NGINX_APP_ROOT}/api/ && \
+    mkdir -p ${NGINX_CONTAINER_SCRIPTS_PATH}/nginx-start && \
+    mkdir -p ${NGINX_LOG_PATH} && \
+    mkdir -p ${NGINX_PERL_MODULE_PATH} && \
+    chown -R 1001:0 ${NGINX_CONF_PATH} && \
+    chown -R 1001:0 ${NGINX_APP_ROOT}/etc && \
+    chown -R 1001:0 ${NGINX_CONTAINER_SCRIPTS_PATH}/nginx-start && \
+    chown -R 1001:0 /var/lib/nginx /var/log/nginx /run && \
+    chmod    ug+rw  ${NGINX_CONF_PATH} && \
+    chmod -R ug+rwX ${NGINX_APP_ROOT}/etc && \
+    chmod -R ug+rwX ${NGINX_CONTAINER_SCRIPTS_PATH}/nginx-start && \
+    chmod -R ug+rwX /var/lib/nginx /var/log/nginx /run && \
+    rpm-file-permissions
+
+## Configure nginx
+COPY --chown=1001:0 nginx/serverconf/ /opt/app-root/etc/nginx.default.d/
+COPY --chown=1001:0 nginx/httpconf/ /opt/app-root/etc/nginx.d/
+COPY --chown=1001:0 nginx/api/ /opt/app-root/api/
+
+#######################
+# Install AnythingLLM #
+#######################
+
+COPY --chown=1001:0 --from=anythingllm /app /app
+RUN chmod -R g+rw /app && \
+    chown -R 1001:0 /app && \
+    # Installing Pupeteer Chromium and moving it to a safe container location, we'll link it at runtime
+    node /app/collector/node_modules/puppeteer/install.mjs && \
+    mv /opt/app-root/src/.cache/puppeteer /app/collector/node_modules/puppeteer/.local-chromium && \
+    rm -rf /opt/app-root/src/.cache
+
+############
+# Launcher #
+############
+
+WORKDIR /opt/app-root/bin
+
+COPY --chown=1001:0 utils utils/
+COPY --chown=1001:0 *.sh *.patch ./
+
+# Patch collector listening port and pupeteer Chromium Sandbox (we're already in a container)
+RUN patch /app/collector/index.js < collector_index.js.patch && \
+    patch /app/collector/processLink/convert/generic.js < collector-processLink-convert_generic.js.patch && \
+    patch /app/collector/utils/extensions/WebsiteDepth/index.js < collector-utils-extenstions-WebsiteDepth_index.js.patch
+
+ENV NODE_ENV=production
+ENV ANYTHING_LLM_RUNTIME=docker
+ENV DISABLE_TELEMETRY=true
+
+# Setup the healthcheck - Removed for Kubernetes usage
+#HEALTHCHECK --interval=1m --timeout=10s --start-period=1m \
+#  CMD /bin/bash /usr/local/bin/docker-healthcheck.sh || exit 1
+
+WORKDIR /opt/app-root/src
+
+USER 1001
+
+ENTRYPOINT ["/bin/bash", "/opt/app-root/bin/run-anythingllm.sh"]

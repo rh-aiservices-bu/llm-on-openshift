@@ -1,0 +1,10 @@
+--- collector/processLink/convert/generic.js	2024-09-09 16:38:03.712198992 -0400
++++ collector/processLink/convert/generic-patched.js	2024-09-09 17:19:02.707115442 -0400
+@@ -57,6 +57,7 @@
+     const loader = new PuppeteerWebBaseLoader(link, {
+       launchOptions: {
+         headless: "new",
++        args: ['--no-sandbox'],
+         ignoreHTTPSErrors: true,
+       },
+       gotoOptions: {

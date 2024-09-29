@@ -1,0 +1,20 @@
+--- collector/utils/extensions/WebsiteDepth/index.js	2024-09-09 16:38:03.713198986 -0400
++++ collector/utils/extensions/WebsiteDepth/index-patched.js	2024-09-09 17:19:53.237822388 -0400
+@@ -47,7 +47,7 @@
+ async function getPageLinks(url, baseUrl) {
+   try {
+     const loader = new PuppeteerWebBaseLoader(url, {
+-      launchOptions: { headless: "new" },
++      launchOptions: { headless: "new", args: ['--no-sandbox'], },
+       gotoOptions: { waitUntil: "domcontentloaded" },
+     });
+     const docs = await loader.load();
+@@ -91,7 +91,7 @@
+ 
+     try {
+       const loader = new PuppeteerWebBaseLoader(link, {
+-        launchOptions: { headless: "new" },
++        launchOptions: { headless: "new", args: ['--no-sandbox'], },
+         gotoOptions: { waitUntil: "domcontentloaded" },
+         async evaluate(page, browser) {
+           const result = await page.evaluate(() => document.body.innerText);
