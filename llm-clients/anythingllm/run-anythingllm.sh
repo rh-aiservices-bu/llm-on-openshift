@@ -17,6 +17,7 @@ if [ ! -d "/opt/app-root/src/anythingllm/storage" ]; then
   mkdir -p /opt/app-root/src/anythingllm/storage/documents
   mkdir -p /opt/app-root/src/anythingllm/storage/vector-cache
   mkdir -p /opt/app-root/src/anythingllm/storage/lancedb
+  mkdir -p /opt/app-root/src/anythingllm/storage/plugins/agent-skills
   touch /opt/app-root/src/anythingllm/storage/anythingllm.db
 fi
 
