@@ -4,8 +4,8 @@ cluster:
 
 image:
   all:
-    repository: quay.io/rh-data-services/milvus-openshift
-    tag: v2.3.10
+    repository: milvusdb/milvus
+    tag: v2.4.12
     pullPolicy: IfNotPresent
     ## Optionally specify an array of imagePullSecrets.
     ## Secrets must be manually created in the namespace.
@@ -15,7 +15,7 @@ image:
     #   - myRegistryKeySecretName
   tools:
     repository: milvusdb/milvus-config-tool
-    tag: v0.1.2
+    tag: v1.0.0
     pullPolicy: IfNotPresent
 
 # Global node selector
@@ -429,7 +429,7 @@ attu:
   name: attu
   image:
     repository: zilliz/attu
-    tag: v2.3.8
+    tag: v2.4
     pullPolicy: IfNotPresent
   service:
     annotations: {}
@@ -532,7 +532,7 @@ etcd:
     create: false
   image:
     repository: "milvusdb/etcd"
-    tag: "3.5.5-r4"
+    tag: "3.5.14-r1"
     pullPolicy: IfNotPresent
 
   service:
@@ -620,27 +620,27 @@ pulsar:
     broker:
       repository: apachepulsar/pulsar
       pullPolicy: IfNotPresent
-      tag: 2.10.5
+      tag: 3.3.1
     autorecovery:
       repository: apachepulsar/pulsar
-      tag: 2.10.5
+      tag: 3.3.1
       pullPolicy: IfNotPresent
     zookeeper:
       repository: apachepulsar/pulsar
       pullPolicy: IfNotPresent
-      tag: 2.10.5
+      tag: 3.3.1
     bookie:
       repository: apachepulsar/pulsar
       pullPolicy: IfNotPresent
-      tag: 2.10.5
+      tag: 3.3.1
     proxy:
       repository: apachepulsar/pulsar
       pullPolicy: IfNotPresent
-      tag: 2.10.5
+      tag: 3.3.1
     pulsar_manager:
       repository: apachepulsar/pulsar-manager
       pullPolicy: IfNotPresent
-      tag: v0.1.0
+      tag: v0.4.0
 
   zookeeper:
     resources:
@@ -774,7 +774,7 @@ pulsar:
     image:
       # the image used for running `pulsar-cluster-initialize` job
       repository: apachepulsar/pulsar
-      tag: 2.10.5
+      tag: 2.10.6
 
 
 ## Configuration values for the kafka dependency
@@ -787,7 +787,7 @@ kafka:
   replicaCount: 3
   image:
     repository: bitnami/kafka
-    tag: 3.1.0-debian-10-r52
+    tag: 3.3.2-debian-12-r33
   ## Increase graceful termination for kafka graceful shutdown
   terminationGracePeriodSeconds: "90"
   pdb:
@@ -829,14 +829,14 @@ kafka:
       enabled: false
       image:
         repository: bitnami/kafka-exporter
-        tag: 1.4.2-debian-10-r182
+        tag: 1.7.0-debian-12-r27
 
     ## Prometheus JMX exporter: exposes the majority of Kafkas metrics
     jmx:
       enabled: false
       image:
         repository: bitnami/jmx-exporter
-        tag: 0.16.1-debian-10-r245
+        tag: 1.0.1-debian-12-r7
 
     ## To enable serviceMonitor, you must enable either kafka exporter or jmx exporter.
     ## And you can enable them both
