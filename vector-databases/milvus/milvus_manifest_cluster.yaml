@@ -421,12 +421,99 @@ data:
     -Xms1024m -Xmx1024m
 ---
 # Source: milvus/templates/configmap.yaml
+# If customConfigMap is not set, this ConfigMap will be redendered.
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: vectordb-milvus
+  namespace: milvus
 data:
-  default.yaml: "# Copyright (C) 2019-2021 Zilliz. All rights reserved.\n#\n# Licensed under the Apache License, Version 2.0 (the \"License\"); you may not use this file except in compliance\n# with the License. You may obtain a copy of the License at\n#\n# http://www.apache.org/licenses/LICENSE-2.0\n#\n# Unless required by applicable law or agreed to in writing, software distributed under the License\n# is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express\n# or implied. See the License for the specific language governing permissions and limitations under the License.\n\netcd:\n  endpoints:\n    - vectordb-etcd:2379\n\nmetastore:\n  type: etcd\n\nminio:\n  address: vectordb-minio\n  port: 9000\n  accessKeyID: minioadmin\n  secretAccessKey: minioadmin\n  useSSL: false\n  bucketName: milvus-bucket\n  rootPath: file\n  useIAM: false\n  iamEndpoint: \n  region: \n  useVirtualHost: false\n\nmq:\n  type: pulsar\n\nmessageQueue: pulsar\n\npulsar:\n  address: vectordb-pulsar-proxy\n  port: 6650\n  maxMessageSize: 5242880\n\nrootCoord:\n  address: vectordb-milvus-rootcoord\n  port: 53100\n  enableActiveStandby: false  # Enable rootcoord active-standby\n\nproxy:\n  port: 19530\n  internalPort: 19529\n\nqueryCoord:\n  address: vectordb-milvus-querycoord\n  port: 19531\n\n  enableActiveStandby: false  # Enable querycoord active-standby\n\nqueryNode:\n  port: 21123\n  enableDisk: true # Enable querynode load disk index, and search on disk index\n\nindexCoord:\n  address: vectordb-milvus-indexcoord\n  port: 31000\n  enableActiveStandby: false  # Enable indexcoord active-standby\n\nindexNode:\n  port: 21121\n  enableDisk: true # Enable index node build disk vector index\n\ndataCoord:\n  address: vectordb-milvus-datacoord\n  port: 13333\n  enableActiveStandby: false  # Enable datacoord active-standby\n\ndataNode:\n  port: 21124\n\nlog:\n  level: info\n  file:\n    rootPath: \"\"\n    maxSize: 300\n    maxAge: 10\n    maxBackups: 20\n  format: text\n"
+  default.yaml: |
+    # Copyright (C) 2019-2021 Zilliz. All rights reserved.
+    #
+    # Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance
+    # with the License. You may obtain a copy of the License at
+    #
+    # http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software distributed under the License
+    # is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+    # or implied. See the License for the specific language governing permissions and limitations under the License.
+
+    etcd:
+      endpoints:
+      - vectordb-etcd-0.vectordb-etcd-headless.milvus.svc.cluster.local:2379
+      - vectordb-etcd-1.vectordb-etcd-headless.milvus.svc.cluster.local:2379
+      - vectordb-etcd-2.vectordb-etcd-headless.milvus.svc.cluster.local:2379
+
+    metastore:
+      type: etcd
+
+    minio:
+      address: vectordb-minio
+      port: 9000
+      accessKeyID: minioadmin
+      secretAccessKey: minioadmin
+      useSSL: false
+      bucketName: milvus-bucket
+      rootPath: file
+      useIAM: false
+      useVirtualHost: false
+
+    mq:
+      type: pulsar
+
+    messageQueue: pulsar
+
+    pulsar:
+      address: vectordb-pulsar-proxy
+      port: 6650
+      maxMessageSize: 5242880
+
+    rootCoord:
+      address: vectordb-milvus-rootcoord
+      port: 53100
+      enableActiveStandby: false  # Enable rootcoord active-standby
+
+    proxy:
+      port: 19530
+      internalPort: 19529
+
+    queryCoord:
+      address: vectordb-milvus-querycoord
+      port: 19531
+
+      enableActiveStandby: false  # Enable querycoord active-standby
+
+    queryNode:
+      port: 21123
+      enableDisk: true # Enable querynode load disk index, and search on disk index
+
+    indexCoord:
+      address: vectordb-milvus-indexcoord
+      port: 31000
+      enableActiveStandby: false  # Enable indexcoord active-standby
+
+    indexNode:
+      port: 21121
+      enableDisk: true # Enable index node build disk vector index
+
+    dataCoord:
+      address: vectordb-milvus-datacoord
+      port: 13333
+      enableActiveStandby: false  # Enable datacoord active-standby
+
+    dataNode:
+      port: 21124
+
+    log:
+      level: info
+      file:
+        rootPath: ""
+        maxSize: 300
+        maxAge: 10
+        maxBackups: 20
+      format: text
   user.yaml: |-
     #    For example enable rest http for milvus proxy
     #    proxy:
@@ -843,11 +930,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-datacoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "datacoord"
 spec:
@@ -871,11 +959,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-datanode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "datanode"
 spec:
@@ -896,11 +985,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-indexcoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "indexcoord"
 spec:
@@ -924,11 +1014,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-indexnode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "indexnode"
 spec:
@@ -949,11 +1040,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-querycoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "querycoord"
 spec:
@@ -977,11 +1069,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-querynode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "querynode"
 spec:
@@ -1002,11 +1095,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus-rootcoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "rootcoord"
 spec:
@@ -1030,11 +1124,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: vectordb-milvus
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "proxy"
 spec:
@@ -1058,11 +1153,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-datacoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "datacoord"
   annotations:
@@ -1082,25 +1178,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "datacoord"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: datacoord
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "datacoord"]
+          args: ["milvus", "run", "datacoord"]
           env:
           ports:
             - name: datacoord
@@ -1151,11 +1237,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-datanode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "datanode"
   annotations:
@@ -1173,25 +1260,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "datanode"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: datanode
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "datanode"]
+          args: ["milvus", "run", "datanode"]
           env:
           ports:
             - name: datanode
@@ -1242,11 +1319,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-indexcoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "indexcoord"
   annotations:
@@ -1266,25 +1344,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "indexcoord"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: indexcoord
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "indexcoord"]
+          args: ["milvus", "run", "indexcoord"]
           env:
           ports:
             - name: indexcoord
@@ -1335,11 +1403,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-indexnode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "indexnode"
   annotations:
@@ -1357,25 +1426,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "indexnode"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: indexnode
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "indexnode"]
+          args: ["milvus", "run", "indexnode"]
           env:
           ports:
             - name: indexnode
@@ -1430,11 +1489,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-proxy
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "proxy"
   annotations:
@@ -1452,25 +1512,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "proxy"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: proxy
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "proxy"]
+          args: ["milvus", "run", "proxy"]
           env:
           ports:
             - name: milvus
@@ -1521,11 +1571,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-querycoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "querycoord"
   annotations:
@@ -1545,25 +1596,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "querycoord"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: querycoord
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "querycoord"]
+          args: ["milvus", "run", "querycoord"]
           env:
           ports:
             - name: querycoord
@@ -1614,11 +1655,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-querynode
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "querynode"
   annotations:
@@ -1636,25 +1678,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "querynode"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: querynode
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "querynode"]
+          args: ["milvus", "run", "querynode"]
           env:
           ports:
             - name: querynode
@@ -1709,11 +1741,12 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vectordb-milvus-rootcoord
+  namespace: milvus
   labels:
-    helm.sh/chart: milvus-4.1.19
+    helm.sh/chart: milvus-4.2.12
     app.kubernetes.io/name: milvus
     app.kubernetes.io/instance: vectordb
-    app.kubernetes.io/version: "2.3.10"
+    app.kubernetes.io/version: "2.4.12"
     app.kubernetes.io/managed-by: Helm
     component: "rootcoord"
   annotations:
@@ -1733,25 +1766,15 @@ spec:
         app.kubernetes.io/instance: vectordb
         component: "rootcoord"
       annotations:
-        checksum/config: 7f44ffef22411cb5348154aeae39e06a9844f6c884e04a7a44964af045b0ed1c
+        checksum/config: c687b3679898db5c175e74a2ad0aafd27e856a1f7f452b6559f114101649262c
     spec:
       serviceAccountName: default
       initContainers:
-        - name: config
-          command:
-            - /cp
-            - /run-helm.sh,/merge
-            - /milvus/tools/run-helm.sh,/milvus/tools/merge
-          image: "milvusdb/milvus-config-tool:v0.1.2"
-          imagePullPolicy: IfNotPresent
-          volumeMounts:
-            - mountPath: /milvus/tools
-              name: tools
       containers:
         - name: rootcoord
-          image: "quay.io/rh-data-services/milvus-openshift:v2.3.10"
+          image: "milvusdb/milvus:v2.4.12"
           imagePullPolicy: IfNotPresent
-          args: ["/milvus/tools/run-helm.sh", "milvus", "run", "rootcoord"]
+          args: ["milvus", "run", "rootcoord"]
           env:
           ports:
             - name: rootcoord
@@ -1845,7 +1868,7 @@ spec:
       serviceAccountName: "default"
       containers:
         - name: etcd
-          image: docker.io/milvusdb/etcd:3.5.5-r4
+          image: docker.io/milvusdb/etcd:3.5.14-r1
           imagePullPolicy: "IfNotPresent"
           securityContext:
             capabilities:
@@ -2115,7 +2138,7 @@ spec:
         # This initContainer will wait for bookkeeper initnewcluster to complete
         # before deploying the bookies
         - name: pulsar-bookkeeper-verify-clusterid
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2133,7 +2156,7 @@ spec:
           volumeMounts:
       containers:
         - name: "vectordb-pulsar-recovery"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -2214,7 +2237,7 @@ spec:
         # This initContainer will wait for bookkeeper initnewcluster to complete
         # before deploying the bookies
         - name: pulsar-bookkeeper-verify-clusterid
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2233,7 +2256,7 @@ spec:
           volumeMounts:
       containers:
         - name: "vectordb-pulsar-bookie"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -2352,7 +2375,7 @@ spec:
         # This init container will wait for zookeeper to be ready before
         # deploying the bookies
         - name: wait-zookeeper-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2367,7 +2390,7 @@ spec:
         # This init container will wait for bookkeeper to be ready before
         # deploying the broker
         - name: wait-bookkeeper-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2393,7 +2416,7 @@ spec:
           volumeMounts:
       containers:
         - name: "vectordb-pulsar-broker"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -2500,7 +2523,7 @@ spec:
         # This init container will wait for zookeeper to be ready before
         # deploying the bookies
         - name: wait-zookeeper-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2514,7 +2537,7 @@ spec:
         # This init container will wait for at least one broker to be ready before
         # deploying the proxy
         - name: wait-broker-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2529,7 +2552,7 @@ spec:
               done;
       containers:
         - name: "vectordb-pulsar-proxy"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           livenessProbe:
             httpGet:
@@ -2624,7 +2647,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: "vectordb-pulsar-zookeeper"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           resources:
             requests:
@@ -2718,7 +2741,7 @@ spec:
     spec:
       initContainers:
         - name: wait-zookeeper-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2731,7 +2754,7 @@ spec:
               done;
       containers:
         - name: "vectordb-pulsar-bookie-init"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2793,7 +2816,7 @@ spec:
     spec:
       initContainers:
         - name: wait-zookeeper-ready
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2807,7 +2830,7 @@ spec:
         # This initContainer will wait for bookkeeper initnewcluster to complete
         # before initializing pulsar metadata
         - name: pulsar-bookkeeper-verify-clusterid
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:
@@ -2827,7 +2850,7 @@ spec:
           volumeMounts:
       containers:
         - name: "vectordb-pulsar-pulsar-init"
-          image: "apachepulsar/pulsar:2.10.5"
+          image: "apachepulsar/pulsar:2.10.6"
           imagePullPolicy: IfNotPresent
           command: ["sh", "-c"]
           args:

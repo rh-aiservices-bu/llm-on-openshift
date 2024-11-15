@@ -8,12 +8,6 @@ Milvus also provides great documentation, starting with a full description of it
 
 ![Architecture](https://milvus.io/static/0bc2e74d0a1b20bbfb91bdbd03f77e5e/1263b/architecture_diagram.png)
 
-## Container image
-
-Milvus currently has a small shortcoming that prevents it to run natively on OpenShift. The fix is pretty straightforward and featured in the provided [Containerfile](Containerfile).
-
-A [PR](https://github.com/milvus-io/milvus/pull/30775) has already been made to fix this issue and is now merged. It should be available in a coming release. Meanwhile, a compatible image is available [here](https://quay.io/repository/rh-data-services/milvus-openshift).
-
 ## Deployment
 
 ### Requirements
@@ -40,16 +34,16 @@ Instead, this deployment method is based on the [Offline installation](https://m
 
 - Log into your OpenShift cluster, and create a new project to host your Milvus installation:
 
-```bash
-oc new-project milvus
-```
+  ```bash
+  oc new-project milvus
+  ```
 
 - Add and update Milvus Helm repository locally:
 
-```bash
-helm repo add milvus https://zilliztech.github.io/milvus-helm/
-helm repo update
-```
+  ```bash
+  helm repo add milvus https://zilliztech.github.io/milvus-helm/
+  helm repo update
+  ```
 
 - Fetch the file [`openshift-values.yaml`](openshift-values.yaml) from this repo. This file is really important as it sets specific values for OpenShift compatibility. You can also modify some of the values in this file to adapt the deployment to your requirements, notably modify the Minio admin user and password.
 
@@ -78,7 +72,7 @@ helm repo update
     yq '(select(.kind == "StatefulSet" and .metadata.name == "vectordb-etcd") | .spec.template.spec.containers[0].securityContext) = {"capabilities": {"drop": ["ALL"]}, "runAsNonRoot": true, "allowPrivilegeEscalation": false}' -i milvus_manifest_standalone.yaml
     yq '(select(.kind == "Deployment" and .metadata.name == "vectordb-minio") | .spec.template.spec.containers[0].securityContext) = {"capabilities": {"drop": ["ALL"]}, "runAsNonRoot": true, "allowPrivilegeEscalation": false, "seccompProfile": {"type": "RuntimeDefault"} }' -i milvus_manifest_standalone.yaml
     yq '(select(.kind == "Deployment" and .metadata.name == "vectordb-minio") | .spec.template.spec.securityContext) = {}' -i milvus_manifest_standalone.yaml
-   ```
+    ```
 
   - For Milvus Cluster:
   
@@ -104,9 +98,9 @@ helm repo update
 
 - To deploy the management UI for Milvus, called Attu, apply the file [attu-deployment.yaml](attu-deployment.yaml):
 
-```bash
-oc apply -f https://raw.githubusercontent.com/rh-aiservices-bu/llm-on-openshift/main/vector-databases/milvus/attu-deployment.yaml
-```
+  ```bash
+  oc apply -f https://raw.githubusercontent.com/rh-aiservices-bu/llm-on-openshift/main/vector-databases/milvus/attu-deployment.yaml
+  ```
 
 NOTE: Attu deployment could have been done through the Helm chart, but this would not properly create the access Route.
 
