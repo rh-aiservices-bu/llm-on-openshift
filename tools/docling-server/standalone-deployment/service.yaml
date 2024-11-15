@@ -1,0 +1,13 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: docling-server
+  labels:
+    app: docling-server
+spec:
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  selector:
+    app: docling-server
