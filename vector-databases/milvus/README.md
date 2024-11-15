@@ -6,7 +6,7 @@ As Milvus supports meany features, the easiest way to understand what it can do 
 
 Milvus also provides great documentation, starting with a full description of its architecture.
 
-![Architecture](https://milvus.io/static/0bc2e74d0a1b20bbfb91bdbd03f77e5e/1263b/architecture_diagram.png)
+![Architecture](https://milvus.io/docs/v2.4.x/assets/milvus_architecture.png)
 
 ## Deployment
 
