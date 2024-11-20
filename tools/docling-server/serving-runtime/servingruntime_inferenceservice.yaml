@@ -13,7 +13,7 @@ metadata:
     opendatahub.io/dashboard: 'true'
 spec:
   containers:
-    - image: 'quay.io/rh-aiservices-bu/docling-server:cuda-0.0.5'
+    - image: 'quay.io/rh-aiservices-bu/docling-server:cuda-0.0.7'
       name: kserve-container
       ports:
         - containerPort: 8080
@@ -59,7 +59,7 @@ spec:
           nvidia.com/gpu: '1'
       env:
         - name: UVICORN_WORKERS
-          value: '2'
+          value: '4'
       runtime: docling
       storage:
         key: aws-connection-models
