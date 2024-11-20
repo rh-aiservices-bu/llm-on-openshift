@@ -45,7 +45,7 @@ app.add_middleware(
 # Define the input options for the API
 class DoclingBaseParameters(BaseModel):
     from_format: Optional[Union[List[str], str]] = Field(
-        ["pdf", "docx"],
+        ["pdf", "docx", "pptx", "html", "image", "asciidoc", "md"],
         description="Input format(s) to convert from. String or list of strings. Allowed values: docx, pptx, html, image, pdf, asciidoc, md. Optional, defaults to all formats.",
         examples=[["pdf", "docx"]],
     )
