@@ -4,7 +4,7 @@
 SCRIPT_DIR=$(dirname -- "$0")
 source ${SCRIPT_DIR}/utils/*.sh
 
-# Initilize access logs for culling
+# Initialize access logs for culling
 echo '[{"id":"anythingllm","name":"anythingllm","last_activity":"'$(date -Iseconds)'","execution_state":"running","connections":1}]' >/var/log/nginx/anythingllm.access.log
 
 # Start nginx and supervisord
@@ -72,6 +72,23 @@ export STORAGE_DIR=/app/server/storage
 
 # Modify the collector port
 export COLLECTOR_PORT=8889
+
+# Customize the look if Parasol mode
+if [ "$PARASOL_MODE" = "True" ] && [ ! -f /app/server/public/customization_done ]; then
+  mv /app/server/public/workspace.svg /app/server/public/workspace.svg.bak
+  cp /app/server/public/parasol-workspace.svg /app/server/public/workspace.svg
+  mv /app/server/public/anything-llm-dark.png /app/server/public/anything-llm-dark.png.bak
+  cp /app/server/public/parasol-logo-dark.png /app/server/public/anything-llm-dark.png
+  mv /app/server/public/anything-llm-light.png /app/server/public/anything-llm-light.png.bak
+  cp /app/server/public/parasol-logo.png /app/server/public/anything-llm-light.png
+  mv /app/server/public/anything-llm.png /app/server/public/anything-llm.png.bak
+  cp /app/server/public/parasol-logo.png /app/server/public/anything-llm.png
+  mv /app/server/public/favicon.ico /app/server/public/favicon.ico.bak
+  cp /app/server/public/parasol-favicon.ico /app/server/public/favicon.ico
+  mv /app/server/public/favicon.png /app/server/public/favicon.png.bak
+  cp /app/server/public/parasol-favicon.png /app/server/public/favicon.png
+  touch /app/server/public/customization_done
+fi
 
 # Start the AnythingLLM server
 cd /app/server/ &&
