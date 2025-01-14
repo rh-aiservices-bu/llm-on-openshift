@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="33"
+   height="33"
+   viewBox="0 0 33 33"
+   fill="none"
+   version="1.1"
+   id="svg14"
+   sodipodi:docname="parasol-icon.svg"
+   inkscape:version="1.4 (e7c3feb100, 2024-10-09)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <defs
+     id="defs14">
+    <inkscape:path-effect
+       effect="fillet_chamfer"
+       id="path-effect14"
+       is_visible="true"
+       lpeversion="1"
+       nodesatellites_param="F,0,0,1,0,8,0,1 @ F,0,0,1,0,8,0,1 @ F,0,0,1,0,8,0,1 @ F,0,0,1,0,8,0,1"
+       radius="8"
+       unit="px"
+       method="auto"
+       mode="F"
+       chamfer_steps="1"
+       flexible="false"
+       use_knot_distance="true"
+       apply_no_radius="true"
+       apply_with_radius="true"
+       only_selected="false"
+       hide_knots="false" />
+  </defs>
+  <sodipodi:namedview
+     id="namedview14"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="true"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="false"
+     inkscape:zoom="15.244755"
+     inkscape:cx="20.498854"
+     inkscape:cy="13.972019"
+     inkscape:window-width="1920"
+     inkscape:window-height="1011"
+     inkscape:window-x="0"
+     inkscape:window-y="32"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg14" />
+  <g
+     id="g14"
+     transform="matrix(0.90025097,0,0,0.90025097,0.4167666,-1.0311732)">
+    <path
+       d="M 17.782797,6.199074 V 3.303162"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path1" />
+    <path
+       d="m 26.470543,30.814308 c 0,2.399295 -1.944579,4.343873 -4.343873,4.343873 -2.399295,0 -4.343873,-1.944578 -4.343873,-4.343873 v -7.239759"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path2" />
+    <path
+       d="m 17.782623,6.199057 c -4.287403,2.133563 -7.239759,6.470199 -7.239759,11.583632 0,0.49164 0,0.724037 0,1.447987"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path3" />
+    <path
+       d="m 17.782797,6.199057 c 4.287402,2.133563 7.239759,6.470199 7.239759,11.583632 0,0.49164 0,0.724037 0,1.447987"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path4" />
+    <path
+       d="M 32.262315,19.230676 C 31.535412,11.913422 25.290399,6.199057 17.78271,6.199057 c -7.507602,0 -13.752684,5.714365 -14.4795617,13.031619 z"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path5" />
+    <path
+       d="M 17.782797,19.230676 V 6.199057"
+       stroke="#ffffff"
+       stroke-width="2.60632"
+       stroke-linecap="round"
+       stroke-linejoin="round"
+       id="path6" />
+  </g>
+</svg>
