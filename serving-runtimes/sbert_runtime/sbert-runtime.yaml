@@ -10,10 +10,10 @@ spec:
   builtInAdapter:
     modelLoadingTimeoutMillis: 90000
   containers:
-    - image: quay.io/rh-aiservices-bu/sbert-runtime:1.1.0
+    - image: quay.io/rh-aiservices-bu/sbert-runtime:1.2.0
       args:
-        - '--model_path=/mnt/models'
-        - '--trust_remote_code=True'
+        - '--model-path=/mnt/models'
+        - '--trust-remote_code=True'
       name: kserve-container
       ports:
         - containerPort: 8080
