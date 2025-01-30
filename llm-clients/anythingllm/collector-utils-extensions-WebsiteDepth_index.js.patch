@@ -6,7 +6,7 @@
      const loader = new PuppeteerWebBaseLoader(url, {
 -      launchOptions: { headless: "new" },
 +      launchOptions: { headless: "new", args: ['--no-sandbox'], },
-       gotoOptions: { waitUntil: "domcontentloaded" },
+       gotoOptions: { waitUntil: "networkidle2" },
      });
      const docs = await loader.load();
 @@ -91,7 +91,7 @@
@@ -15,6 +15,6 @@
        const loader = new PuppeteerWebBaseLoader(link, {
 -        launchOptions: { headless: "new" },
 +        launchOptions: { headless: "new", args: ['--no-sandbox'], },
-         gotoOptions: { waitUntil: "domcontentloaded" },
+         gotoOptions: { waitUntil: "networkidle2" },
          async evaluate(page, browser) {
            const result = await page.evaluate(() => document.body.innerText);
