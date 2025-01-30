@@ -1,4 +1,4 @@
-FROM docker.io/mintplexlabs/anythingllm:1.3 as anythingllm
+FROM docker.io/mintplexlabs/anythingllm:1.4 as anythingllm
 
 FROM quay.io/sclorg/s2i-core-c9s:c9s
 
@@ -151,13 +151,13 @@ RUN chmod -R g+rw /app && \
 
 WORKDIR /opt/app-root/bin
 
-COPY --chown=1001:0 utils utils/
 COPY --chown=1001:0 *.sh *.patch ./
+COPY --chown=1001:0 utils utils/
 
 # Patch collector listening port and pupeteer Chromium Sandbox (we're already in a container)
 RUN patch /app/collector/index.js < collector_index.js.patch && \
     patch /app/collector/processLink/convert/generic.js < collector-processLink-convert_generic.js.patch && \
-    patch /app/collector/utils/extensions/WebsiteDepth/index.js < collector-utils-extenstions-WebsiteDepth_index.js.patch
+    patch /app/collector/utils/extensions/WebsiteDepth/index.js < collector-utils-extensions-WebsiteDepth_index.js.patch
 
 ENV NODE_ENV=production
 ENV ANYTHING_LLM_RUNTIME=docker
