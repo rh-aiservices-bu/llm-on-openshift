@@ -2,7 +2,7 @@ FROM docker.io/mintplexlabs/anythingllm:1.4 as anythingllm
 
 FROM quay.io/sclorg/s2i-core-c9s:c9s
 
-LABEL name="anytingllm-workbench" \
+LABEL name="anythingllm-workbench" \
     summary="AnythingLLM workbench" \
     description="AnythingLLM workbench"
 
@@ -140,7 +140,7 @@ COPY --chown=1001:0 nginx/api/ /opt/app-root/api/
 COPY --chown=1001:0 --from=anythingllm /app /app
 RUN chmod -R g+rw /app && \
     chown -R 1001:0 /app && \
-    # Installing Pupeteer Chromium and moving it to a safe container location, we'll link it at runtime
+    # Installing Puppeteer Chromium and moving it to a safe container location, we'll link it at runtime
     node /app/collector/node_modules/puppeteer/install.mjs && \
     mv /opt/app-root/src/.cache/puppeteer /app/collector/node_modules/puppeteer/.local-chromium && \
     rm -rf /opt/app-root/src/.cache
@@ -154,18 +154,17 @@ WORKDIR /opt/app-root/bin
 COPY --chown=1001:0 *.sh *.patch ./
 COPY --chown=1001:0 utils utils/
 
-# Patch collector listening port and pupeteer Chromium Sandbox (we're already in a container)
+# Patch collector listening port and puppeteer Chromium Sandbox (we're already in a container)
 RUN patch /app/collector/index.js < collector_index.js.patch && \
     patch /app/collector/processLink/convert/generic.js < collector-processLink-convert_generic.js.patch && \
     patch /app/collector/utils/extensions/WebsiteDepth/index.js < collector-utils-extensions-WebsiteDepth_index.js.patch
 
+# Copy Parasol assets
+COPY --chown=1001:0 customize/ /app/server/public/
+
 ENV NODE_ENV=production
 ENV ANYTHING_LLM_RUNTIME=docker
 ENV DISABLE_TELEMETRY=true
-
-# Setup the healthcheck - Removed for Kubernetes usage
-#HEALTHCHECK --interval=1m --timeout=10s --start-period=1m \
-#  CMD /bin/bash /usr/local/bin/docker-healthcheck.sh || exit 1
 
 WORKDIR /opt/app-root/src
 
