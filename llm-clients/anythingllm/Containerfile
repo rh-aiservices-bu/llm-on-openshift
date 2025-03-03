@@ -1,4 +1,4 @@
-FROM docker.io/mintplexlabs/anythingllm:1.4 as anythingllm
+FROM docker.io/mintplexlabs/anythingllm:1.7.4 as anythingllm
 
 FROM quay.io/sclorg/s2i-core-c9s:c9s
 
