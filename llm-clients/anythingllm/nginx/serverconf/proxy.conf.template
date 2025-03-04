@@ -27,6 +27,17 @@ location = /api/kernels {
     access_log  off;
 }
 
+location = /api/terminals {
+    return 302 $custom_scheme://$http_host/api/kernels/;
+    access_log  off;
+}
+
+location = /api/terminals/ {
+    return 302 $custom_scheme://$http_host/api/kernels/;
+    access_log  off;
+}
+
+
 location /api/kernels/ {
   #index access.cgi;
   #fastcgi_index access.cgi;

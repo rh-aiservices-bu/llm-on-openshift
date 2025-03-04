@@ -1,4 +1,4 @@
+liberation-fonts
 patch
 wget
 xdg-utils
-liberation-fonts
