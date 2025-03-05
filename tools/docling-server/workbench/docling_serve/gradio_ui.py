@@ -88,17 +88,38 @@ theme = gr.themes.Default(
 gradio_output_dir = None  # Will be set by FastAPI when mounted
 file_output_path = None  # Will be set when a new file is generated
 
-host = os.environ.get('HOST') # yoour MaaS app link
-auth_token = os.environ.get('AUTH_TOKEN') # your token
+def get_env_or_default(env_var, default_value):
+    return os.environ.get(env_var, default_value)
+
+global_host = get_env_or_default('HOST', '')
+global_auth_token = get_env_or_default('AUTH_TOKEN', '')
+
 
 #############
 # Functions #
 #############
 
+def update_connection_settings(host, auth_token):
+    """
+    Update global host and auth token variables and clear error if successful.
+    """
+    global global_host, global_auth_token
+    global_host = host if host else global_host
+    global_auth_token = auth_token if auth_token else global_auth_token
+    
+    try:
+        headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
+        response = requests.get(f"{global_host}/health", headers=headers)
+        if response.status_code == 200:
+            return gr.update(value="✅ Connection successful!"), ""
+        else:
+            return gr.update(value="⚠️ Connection updated, but service is not responding."), ""
+    except Exception as e:
+        return gr.update(value="❌ Error checking connection. Please verify your inputs."), str(e)
 
 def health_check():
-    headers = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
-    response = requests.get(f"{host}/health", headers=headers)
+    headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
+    response = requests.get(f"{global_host}/health", headers=headers)
     if response.status_code == 200:
         return "Healthy"
     return "Unhealthy"
@@ -209,16 +230,17 @@ def process_url(
     ):
         logger.error("No input sources provided.")
         raise gr.Error("No input sources provided.", print_exception=False)
-    headers = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
+    
+    headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
     try:
         response = requests.post(
-            f"{host}/v1alpha/convert/source",
+            f"{global_host}/v1alpha/convert/source",
             json=parameters,
             headers=headers,
         )
     except Exception as e:
         logger.error(f"Error processing URL: {e}")
-        raise gr.Error(f"Error processing URL: {e}", print_exception=False)
+        raise gr.Error(f"Error processing URL. Please verify your URL, and check the Host and Auth Token variables in Settings.", print_exception=False)
     if response.status_code != 200:
         data = response.json()
         error_message = data.get("detail", "An unknown error occurred.")
@@ -259,11 +281,10 @@ def process_file(
         "return_as_file": str(return_as_file).lower(),
     }
 
-    headers = {"Authorization": f"Bearer {auth_token}"} if auth_token else {}
-    
+    headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
     try:
         response = requests.post(
-            f"{host}/v1alpha/convert/file",
+            f"{global_host}/v1alpha/convert/file",
             files=files_data,
             data=parameters,
             headers=headers,
@@ -426,6 +447,36 @@ with gr.Blocks(
             with gr.Column(scale=1):
                 file_process_btn = gr.Button("Process File(s)", scale=1)
                 file_reset_btn = gr.Button("Reset", scale=1)
+
+    # Add a new Settings Tab
+    with gr.Tab("Settings"):
+        with gr.Row():
+            with gr.Column(scale=3.5):
+                host_input = gr.Textbox(
+                    label="Host",
+                    placeholder="Enter your Docling endpoint",
+                    value=global_host,
+                    interactive=True if not os.environ.get('HOST') else False
+                )
+            with gr.Column(scale=2):
+                auth_token_input = gr.Textbox(
+                    label="Authorization Token",
+                    placeholder="Enter your authorization token",
+                    value=global_auth_token,
+                    type="password",
+                    interactive=True if not os.environ.get('AUTH_TOKEN') else False
+                )
+            with gr.Column(scale=1, min_width=90):
+                update_settings_btn = gr.Button("Update Settings")
+
+        connection_status = gr.Markdown("No connection status yet.")
+        error_message = gr.Markdown("", visible=False)
+        
+        update_settings_btn.click(
+            update_connection_settings,
+            inputs=[host_input, auth_token_input],
+            outputs=[connection_status, error_message]
+        )
 
     # Options
     with gr.Accordion("Options") as options:
