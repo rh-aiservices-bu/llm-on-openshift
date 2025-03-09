@@ -1,5 +1,11 @@
 # Docling
 
+DEPRECATED!
+
+This is an earlier version of an API for Docling. This code has been ported and integrated in the official [Docling Serve](https://github.com/DS4SD/docling-serve) project.
+
+--------
+
 ![Docling](https://github.com/DS4SD/docling/raw/main/docs/assets/docling_processing.png)
 
 [Docling](https://github.com/DS4SD/docling) parses documents and exports them to the desired format with ease and speed.
