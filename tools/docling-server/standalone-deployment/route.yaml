@@ -4,6 +4,7 @@ metadata:
   name: docling-server
   labels:
     app: docling-server
+spec:
   to:
     kind: Service
     name: docling-server
