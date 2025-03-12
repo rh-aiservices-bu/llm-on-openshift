@@ -5,7 +5,7 @@ SCRIPT_DIR=$(dirname -- "$0")
 source ${SCRIPT_DIR}/utils/*.sh
 
 # Initialize access logs for culling
-echo '[{"id":"anythingllm","name":"anythingllm","last_activity":"'$(date -Iseconds)'","execution_state":"running","connections":1}]' >/var/log/nginx/anythingllm.access.log
+echo '[{"id":"anythingllm","name":"anythingllm","last_activity":"'$(date -Iseconds)'","execution_state":"busy","connections":1}]' >/var/log/nginx/anythingllm.access.log
 
 # Start nginx and supervisord
 run-nginx.sh &
