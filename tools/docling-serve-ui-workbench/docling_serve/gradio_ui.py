@@ -357,7 +357,7 @@ with gr.Blocks(
     head=head,
     css=css,
     theme=theme,
-    title="Docling Serve",
+    title="Docling Web Client",
     delete_cache=(3600, 3600),  # Delete all files older than 1 hour every hour
 ) as ui:
 
@@ -382,9 +382,9 @@ with gr.Blocks(
                 scale=0,
             )
         # Title
-        with gr.Column(scale=1, min_width=200):
+        with gr.Column(scale=1, min_width=400):
             gr.Markdown(
-                f"# Docling Serve",
+                f"# Docling Web Client",
                 # f"{importlib.metadata.version('docling')})",
                 elem_id="title",
                 elem_classes=["title-text"],
