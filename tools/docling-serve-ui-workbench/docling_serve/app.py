@@ -51,6 +51,12 @@ _log = logging.getLogger(__name__)
 # App creation and configuration #
 ##################################
 
+def update_last_activity():
+    # Update the last activity timestamp
+    docling_serve_settings.last_activity = datetime.now()
+
+def get_last_activity():
+    return docling_serve_settings.last_activity
 
 def create_app():
     app = FastAPI(
@@ -72,6 +78,7 @@ def create_app():
 
     # Mount the Gradio app
     if docling_serve_settings.enable_ui:
+        print("importing gradio")
 
         import gradio as gr
         from docling_serve.gradio_ui import ui as gradio_ui
@@ -85,6 +92,9 @@ def create_app():
             allowed_paths=["./logo.png", tmp_output_dir],
             root_path="/ui",
         )
+
+    # Initialize the last activity timestamp
+    update_last_activity()
 
     #############################
     # API Endpoints definitions #
@@ -112,94 +122,42 @@ def create_app():
 
     @app.get("/")
     async def root():
+        print("entering root")
         return RedirectResponse(url="/ui")
 
     @app.get("/health")
     def health() -> HealthCheckResponse:
         return HealthCheckResponse()
-
+  
     # Enhanced OpenShift AI Workbench compatibility endpoints
     nb_prefix = os.environ.get("NB_PREFIX", "")
-    
+         
     # Basic API health check
-    @app.get("/api", include_in_schema=False)
+    @app.get(f"{nb_prefix}/api", include_in_schema=False)
+    @app.get(f"{nb_prefix}/api/", include_in_schema=False)
     def api_check() -> HealthCheckResponse:
         return HealthCheckResponse()
-        
-    @app.get("/api/", include_in_schema=False)
-    def api_check_slash() -> HealthCheckResponse:
-        return HealthCheckResponse()
-
-    # Kernel health checks for OpenShift AI
-    @app.get("/api/kernels", include_in_schema=False)
-    def api_kernels():
-        return [
-            {
-                "id": "docling-serve",
-                "name": "docling-serve",
-                "last_activity": datetime.now().isoformat(),
-                "execution_state": "alive",
-                "connections": 1,
-            }
-        ]
-        
-    @app.get("/api/kernels/", include_in_schema=False)
-    def api_kernels_slash():
-        return [
-            {
-                "id": "docling-serve",
-                "name": "docling-serve",
-                "last_activity": datetime.now().isoformat(),
-                "execution_state": "alive",
-                "connections": 1,
-            }
-        ]
     
-    # If we're in OpenShift AI environment with NB_PREFIX
-    if nb_prefix:
-        _log.info(f"Detected OpenShift AI environment with prefix: {nb_prefix}")
-        
-        # Register prefixed routes for OpenShift AI compatibility
-        @app.get(f"{nb_prefix}/api", include_in_schema=False)
-        def prefixed_api_check() -> HealthCheckResponse:
-            return HealthCheckResponse()
-            
-        @app.get(f"{nb_prefix}/api/", include_in_schema=False)
-        def prefixed_api_check_slash() -> HealthCheckResponse:
-            return HealthCheckResponse()
-            
-        @app.get(f"{nb_prefix}/api/kernels", include_in_schema=False)
-        def prefixed_api_kernels():
-            return [
-                {
-                    "id": "docling-serve",
-                    "name": "docling-serve",
-                    "last_activity": datetime.now().isoformat(),
-                    "execution_state": "alive",
-                    "connections": 1,
-                }
-            ]
-            
-        @app.get(f"{nb_prefix}/api/kernels/", include_in_schema=False)
-        def prefixed_api_kernels_slash():
-            return [
-                {
-                    "id": "docling-serve",
-                    "name": "docling-serve",
-                    "last_activity": datetime.now().isoformat(),
-                    "execution_state": "alive",
-                    "connections": 1,
-                }
-            ]
-            
-        # Redirect all other prefixed requests to root
+    # Kernels and Terminals check for OpenShift AI
+    @app.get(f"{nb_prefix}/api/kernels", include_in_schema=False)
+    @app.get(f"{nb_prefix}/api/kernels/", include_in_schema=False)
+    def api_kernels():
+        return []
+    
+    @app.get(f"{nb_prefix}/api/terminals", include_in_schema=False)
+    @app.get(f"{nb_prefix}/api/terminals/", include_in_schema=False)
+    def api_terminals():
+        return [{"name": "1", "last_activity": get_last_activity()}]
+    
+    if nb_prefix != "":
+        # Redirect all other prefixed requests to ui
         @app.get(f"{nb_prefix}/{{path:path}}", include_in_schema=False)
-        async def prefixed_redirect(path: str):
+        async def redirect(path: str):
             if path and not (path.startswith("api") or path == "health"):
-                return RedirectResponse(url="/")
+                return RedirectResponse(url="/ui")
                 
         @app.get(f"{nb_prefix}", include_in_schema=False)
-        async def prefixed_root_redirect():
-            return RedirectResponse(url="/")
+        async def root_redirect():
+            return RedirectResponse(url="/ui")
 
     return app

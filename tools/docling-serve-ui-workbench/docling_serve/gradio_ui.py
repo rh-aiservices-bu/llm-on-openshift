@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import os
@@ -8,6 +9,7 @@ import gradio as gr
 import requests
 
 from docling_serve.helper_functions import _to_list_of_strings
+from docling_serve.settings import docling_serve_settings
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +101,10 @@ global_auth_token = get_env_or_default('AUTH_TOKEN', '')
 # Functions #
 #############
 
+def update_last_activity():
+    # Update the last activity timestamp
+    docling_serve_settings.last_activity = datetime.now()
+
 def update_connection_settings(host, auth_token):
     """
     Update global host and auth token variables and clear error if successful.
@@ -106,7 +112,9 @@ def update_connection_settings(host, auth_token):
     global global_host, global_auth_token
     global_host = host if host else global_host
     global_auth_token = auth_token if auth_token else global_auth_token
-    
+
+    update_last_activity()
+
     try:
         headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
         response = requests.get(f"{global_host}/health", headers=headers)
@@ -232,6 +240,9 @@ def process_url(
         raise gr.Error("No input sources provided.", print_exception=False)
     
     headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
+
+    update_last_activity()
+
     try:
         response = requests.post(
             f"{global_host}/v1alpha/convert/source",
@@ -247,6 +258,7 @@ def process_url(
         logger.error(f"Error processing file: {error_message}")
         raise gr.Error(f"Error processing file: {error_message}", print_exception=False)
     output = response_to_output(response, return_as_file)
+    update_last_activity()
     return output
 
 
@@ -282,6 +294,9 @@ def process_file(
     }
 
     headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
+
+    update_last_activity()
+
     try:
         response = requests.post(
             f"{global_host}/v1alpha/convert/file",
@@ -298,6 +313,7 @@ def process_file(
         logger.error(f"Error processing file: {error_message}")
         raise gr.Error(f"Error processing file: {error_message}", print_exception=False)
     output = response_to_output(response, return_as_file)
+    update_last_activity()
     return output
 
 

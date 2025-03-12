@@ -27,6 +27,7 @@ class DoclingServeSettings(BaseSettings):
 
     enable_ui: bool = False
     artifacts_path: Optional[Path] = None
+    last_activity: str = ""
 
 
 uvicorn_settings = UvicornSettings()
