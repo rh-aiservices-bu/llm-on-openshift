@@ -14,7 +14,7 @@ if [ ! -v NGINX_LOG_TO_VOLUME -a -v NGINX_LOG_PATH ]; then
     /bin/ln -sf /dev/stderr ${NGINX_LOG_PATH}/error.log
 fi
 
-# substitute NB_PREFIX in proxy configuratin if it exists
+# substitute NB_PREFIX in proxy configuration if it exists
 if [ -z "$NB_PREFIX" ]; then
     cp /opt/app-root/etc/nginx.default.d/proxy.conf.template /opt/app-root/etc/nginx.default.d/proxy.conf
 else
