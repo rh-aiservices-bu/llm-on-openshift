@@ -8,7 +8,7 @@ from datetime import datetime
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from pydantic import BaseModel
 
 from docling_serve.settings import docling_serve_settings
@@ -89,7 +89,7 @@ def create_app():
             app,
             gradio_ui,
             path="/ui",
-            allowed_paths=["./logo.png", tmp_output_dir],
+            allowed_paths=["./docling-logo.svg", tmp_output_dir],
             root_path="/ui",
         )
 
@@ -103,10 +103,9 @@ def create_app():
     # Favicon
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
-        response = RedirectResponse(
-            url="https://ds4sd.github.io/docling/assets/logo.png"
-        )
-        return response
+        current_file_dir = os.path.dirname(os.path.abspath(__file__))
+        logo_path = os.path.join(current_file_dir, 'docling-logo.svg')
+        return FileResponse(logo_path)
 
     # Status
     class HealthCheckResponse(BaseModel):
