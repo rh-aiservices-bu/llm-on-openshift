@@ -386,8 +386,10 @@ with gr.Blocks(
     with gr.Row(elem_id="check_health"):
         # Logo
         with gr.Column(scale=1, min_width=90):
+            current_file_dir = os.path.dirname(os.path.abspath(__file__))
+            logo_path = os.path.join(current_file_dir, 'docling-logo.svg')
             gr.Image(
-                "https://ds4sd.github.io/docling/assets/logo.png",
+                logo_path,
                 height=80,
                 width=80,
                 show_download_button=False,
