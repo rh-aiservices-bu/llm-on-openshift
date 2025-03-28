@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vllm
+  labels:
+    app: vllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vllm
+  template:
+    metadata:
+      labels:
+        app: vllm
+    spec:
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: server
+          image: quay.io/rusrin/vllm-fork-gaudi:ubi9.4_1.20.0
+          imagePullPolicy: Always
+          args:
+            - "--model=mistralai/Mistral-7B-Instruct-v0.3"
+            - "--download-dir"
+            - "/models-cache"           
+            - "--device"
+            - "hpu"
+            - "--tensor-parallel-size"
+            - "1"
+            - "--pipeline-parallel-size"
+            - "1"
+            - "--dtype"
+            - "bfloat16"
+            - "--max-model-len"
+            - "6144"
+          ports:
+            - name: http
+              containerPort: 8000
+              protocol: TCP
+          env:
+            - name: HUGGING_FACE_HUB_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: hf-token
+                  key: HF_TOKEN
+            - name: HABANA_VISIBLE_DEVICES
+              value: "all"
+            - name: OMPI_MCA_btl_vader_single_copy_mechanism
+              value: "none"
+            - name: PT_HPU_ENABLE_LAZY_COLLECTIVES
+              value: "true"
+            - name: PT_HPU_LAZY_ACC_PAR_MODE
+              value: "0"
+            - name: VLLM_SKIP_WARMUP
+              value: "true"
+          resources:
+            limits:
+              cpu: "8"
+              memory: 55Gi
+              habana.ai/gaudi: 1
+              hugepages-2Mi: 8000Mi
+            requests:
+              cpu: "6"
+              memory: 50Gi
+              habana.ai/gaudi: 1
+              hugepages-2Mi: 8000Mi
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+            seccompProfile:
+              type: RuntimeDefault
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 5
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 8
+            periodSeconds: 100
+            successThreshold: 1
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+              scheme: HTTP
+            timeoutSeconds: 1
+            periodSeconds: 30
+            successThreshold: 1
+            failureThreshold: 24
+          volumeMounts:
+            - name: models-cache
+              mountPath: /models-cache
+            - name: shm
+              mountPath: /dev/shm
+            - name: tmp
+              mountPath: /tmp
+            - name: cache
+              mountPath: /.cache
+            - name: config
+              mountPath: /.config
+      volumes:
+        - name: models-cache
+          persistentVolumeClaim:
+            claimName: vllm-models-cache
+        - name: shm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 12Gi
+        - name: tmp
+          emptyDir: {}
+        - name: cache
+          emptyDir: {}
+        - name: config
+          emptyDir: {}
+      dnsPolicy: ClusterFirst
+      tolerations:
+        - key: habana.ai/gaudi
+          operator: Exists
+          effect: NoSchedule
+  strategy:
+    type: Recreate
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
