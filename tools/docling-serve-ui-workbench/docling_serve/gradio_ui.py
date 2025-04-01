@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 # Head JS for web components #
 ##############################
 head = """
-    <script src="https://unpkg.com/@docling/docling-components@0.0.3" type="module"></script>
+    <script src="/static/docling-components.js" type="module"></script>
 """
 
 #################
@@ -42,8 +42,9 @@ css = """
     padding-top: 5px;
     line-height: 0;
 }
-.title-text h1 {
-    margin-top: 5mm !important;
+.title-text h1 > p, .title-text p {
+    margin-top: 0px !important;
+    margin-bottom: 2px !important;
 }
 #custom-container {
     border: 0.909091px solid;
@@ -215,6 +216,10 @@ def process_url(
     table_mode,
     abort_on_error,
     return_as_file,
+    do_code_enrichment,
+    do_formula_enrichment,
+    do_picture_classification,
+    do_picture_description,
 ):
     parameters = {
         "http_sources": [{"url": source} for source in input_sources.split(",")],
@@ -229,6 +234,10 @@ def process_url(
             "table_mode": table_mode,
             "abort_on_error": abort_on_error,
             "return_as_file": return_as_file,
+            "do_code_enrichment": do_code_enrichment,
+            "do_formula_enrichment": do_formula_enrichment,
+            "do_picture_classification": do_picture_classification,
+            "do_picture_description": do_picture_description,
         },
     }
     if (
@@ -274,6 +283,10 @@ def process_file(
     table_mode,
     abort_on_error,
     return_as_file,
+    do_code_enrichment,
+    do_formula_enrichment,
+    do_picture_classification,
+    do_picture_description,
 ):
     if not files or len(files) == 0 or files[0] == "":
         logger.error("No files provided.")
@@ -291,6 +304,10 @@ def process_file(
         "table_mode": table_mode,
         "abort_on_error": str(abort_on_error).lower(),
         "return_as_file": str(return_as_file).lower(),
+        "do_code_enrichment": str(do_code_enrichment).lower(),
+        "do_formula_enrichment": str(do_formula_enrichment).lower(),
+        "do_picture_classification": str(do_picture_classification).lower(),
+        "do_picture_description": str(do_picture_description).lower(),
     }
 
     headers = {"Authorization": f"Bearer {global_auth_token}"} if global_auth_token else {}
@@ -376,7 +393,6 @@ with gr.Blocks(
     title="Docling Web Client",
     delete_cache=(3600, 3600),  # Delete all files older than 1 hour every hour
 ) as ui:
-
     # Constants stored in states to be able to pass them as inputs to functions
     processing_text = gr.State("Processing your document(s), please wait...")
     true_bool = gr.State(True)
@@ -387,7 +403,7 @@ with gr.Blocks(
         # Logo
         with gr.Column(scale=1, min_width=90):
             current_file_dir = os.path.dirname(os.path.abspath(__file__))
-            logo_path = os.path.join(current_file_dir, 'docling-logo.svg')
+            logo_path = os.path.join(current_file_dir, 'static/docling-logo.svg')
             gr.Image(
                 logo_path,
                 height=80,
@@ -466,7 +482,7 @@ with gr.Blocks(
                 file_process_btn = gr.Button("Process File(s)", scale=1)
                 file_reset_btn = gr.Button("Reset", scale=1)
 
-    # Add a new Settings Tab
+    # Settings Tab
     with gr.Tab("Settings"):
         with gr.Row():
             with gr.Column(scale=3.5):
@@ -554,6 +570,21 @@ with gr.Blocks(
             with gr.Column(scale=1):
                 abort_on_error = gr.Checkbox(label="Abort on Error", value=False)
                 return_as_file = gr.Checkbox(label="Return as File", value=False)
+        with gr.Row(visible=False):
+            with gr.Column():
+                do_code_enrichment = gr.Checkbox(
+                    label="Enable code enrichment", value=False
+                )
+                do_formula_enrichment = gr.Checkbox(
+                    label="Enable formula enrichment", value=False
+                )
+            with gr.Column():
+                do_picture_classification = gr.Checkbox(
+                    label="Enable picture classification", value=False
+                )
+                do_picture_description = gr.Checkbox(
+                    label="Enable picture description", value=False
+                )
 
     # Document output
     with gr.Row(visible=False) as content_output:
@@ -637,6 +668,10 @@ with gr.Blocks(
             table_mode,
             abort_on_error,
             return_as_file,
+            do_code_enrichment,
+            do_formula_enrichment,
+            do_picture_classification,
+            do_picture_description,
         ],
         outputs=[
             output_markdown,
@@ -708,6 +743,10 @@ with gr.Blocks(
             table_mode,
             abort_on_error,
             return_as_file,
+            do_code_enrichment,
+            do_formula_enrichment,
+            do_picture_classification,
+            do_picture_description,
         ],
         outputs=[
             output_markdown,
