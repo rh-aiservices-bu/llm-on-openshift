@@ -9,6 +9,7 @@ from datetime import datetime
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from docling_serve.settings import docling_serve_settings
@@ -76,6 +77,10 @@ def create_app():
         allow_headers=headers,
     )
 
+    # Mount the static files
+    static_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+
     # Mount the Gradio app
     if docling_serve_settings.enable_ui:
         print("importing gradio")
@@ -89,7 +94,7 @@ def create_app():
             app,
             gradio_ui,
             path="/ui",
-            allowed_paths=["./docling-logo.svg", tmp_output_dir],
+            allowed_paths=[tmp_output_dir],
             root_path="/ui",
         )
 
@@ -104,7 +109,7 @@ def create_app():
     @app.get("/favicon.ico", include_in_schema=False)
     async def favicon():
         current_file_dir = os.path.dirname(os.path.abspath(__file__))
-        logo_path = os.path.join(current_file_dir, 'docling-logo.svg')
+        logo_path = os.path.join(current_file_dir, 'static/docling-logo.svg')
         return FileResponse(logo_path)
 
     # Status
