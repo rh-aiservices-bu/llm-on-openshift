@@ -19,7 +19,7 @@ spec:
       terminationGracePeriodSeconds: 120
       containers:
         - name: server
-          image: quay.io/rusrin/vllm-fork-gaudi:ubi9.4_1.20.0
+          image: intel/redhat-ai-services:llm-on-openshift_ubi9.4_1.20.0
           imagePullPolicy: Always
           args:
             - "--model=mistralai/Mistral-7B-Instruct-v0.3"

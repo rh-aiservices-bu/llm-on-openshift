@@ -2,7 +2,7 @@
 
 Example deployment of the [vLLM](https://github.com/vllm-project/vllm) server for OpenShift using Intel Gaudi HPU.
 
-This deployment uses Habana image based on UBI9.4 defined in `Containerfile` and accessible at `quay.io/rusrin/vllm-fork-gaudi` (check for the latest version available).
+This deployment uses Habana image based on UBI9.4 defined in `Containerfile` and accessible at `intel/redhat-ai-services:llm-on-openshift_ubi9.4_1.20.0` (check for the latest version available).
 
 This image implement the OpenAI API interface for maximum compatibility with other tools. See [here](https://docs.vllm.ai/en/latest/getting_started/quickstart.html#openai-compatible-server) for more information.
 
