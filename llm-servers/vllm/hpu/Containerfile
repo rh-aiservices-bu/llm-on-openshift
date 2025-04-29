@@ -1,0 +1,30 @@
+# This vLLM Dockerfile is used to construct image that can build and run vLLM on gaudi platform.
+# Copyright (C) 2024-2025 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+
+FROM vault.habana.ai/gaudi-docker/1.20.0/rhel9.4/habanalabs/pytorch-installer-2.6.0:latest
+# this is based on ubi:9.4 image, correspoding Docker file is at
+# https://github.com/HabanaAI/Setup_and_Install/blob/main/dockerfiles/base/Dockerfile.rhel9.4
+ENV LANG=en_US.UTF-8
+
+# Set working directory and home for the non-root arbitrary OpenShift user
+ENV HOME=/home/app
+ENV PATH="$PATH:$HOME/.local/bin"
+WORKDIR $HOME
+
+# Create the home directory and ensure it's accessible to any UID
+RUN mkdir -p $HOME && \
+    chmod -R g+rwX $HOME && \
+    chown -R 0:0 $HOME
+
+# Set target device for vLLM
+ENV VLLM_TARGET_DEVICE="hpu"
+
+# Install Python packages (safe to install as root during build)
+RUN pip install --upgrade-strategy eager optimum[habana] --extra-index-url https://download.pytorch.org/whl/cpu && \
+    pip install -v git+https://github.com/HabanaAI/vllm-fork.git@v0.6.6.post1+Gaudi-1.20.0 --extra-index-url https://download.pytorch.org/whl/cpu && \
+    pip install triton==3.1.0 --ignore-installed
+
+EXPOSE 8000
+
+ENTRYPOINT ["python3", "-m", "vllm.entrypoints.openai.api_server"]
