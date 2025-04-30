@@ -36,8 +36,8 @@ Once the stack is installed, adding the runtime is pretty straightforward:
 
 Two arguments are available in the runtime definition:
 
-- `--model_path`: indicates where the model is stored. Defaults to `/mnt/models` for compatibility with OpenShift AI Model Serving.
-- `--trust_remote_code`: may be needed to be set to true for some models. Defaults to `false`.
+- `--model-path`: indicates where the model is stored. Defaults to `/mnt/models` for compatibility with OpenShift AI Model Serving.
+- `--trust-remote-code`: may be needed to be set to true for some models. Defaults to `false`.
 
 The runtime is now available when deploying a model.
 

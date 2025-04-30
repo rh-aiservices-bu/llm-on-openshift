@@ -59,6 +59,6 @@ A `test_service.ipynb` example is present in the folder to test a connection to 
 Two arguments are available when launching the container:
 
 - `--model-path`: indicates where the model is stored. Defaults to `/mnt/models` for compatibility with OpenShift AI Model Serving.
-- `--trust-remote_code`: may be needed to be set to true for some models. Defaults to `false`.
+- `--trust-remote-code`: may be needed to be set to true for some models. Defaults to `false`.
 
 The environment variable `UVICORN_WORKERS` can also be set to have multiple workers spawned simultaneously (default 1). Useful when you want to maximize the usage of the GPU that will be assigned to a single Pod as the different workers will be able to share the GPU.
