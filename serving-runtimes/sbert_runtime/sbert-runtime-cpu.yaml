@@ -13,7 +13,7 @@ spec:
     - image: quay.io/rh-aiservices-bu/sbert-runtime-cpu:1.2.0
       args:
         - '--model-path=/mnt/models'
-        - '--trust-remote_code=True'
+        - '--trust-remote-code=True'
       name: kserve-container
       ports:
         - containerPort: 8080
